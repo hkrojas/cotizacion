@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cotizaciones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #004aad;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background-color: #004aad;
+            color: white;
+            padding: 10px;
+        }
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .btn-descargar {
+            background-color: #004aad;
+            color: white;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .btn-descargar:hover {
+            background-color: #003a87;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Ver Cotizaciones</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>N° Cotización</th>
+            <th>Cliente</th>
+            <th>Fecha de Creación</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cotizacion in cotizaciones %}
+        <tr>
+            <td>{{ cotizacion.numero_cotizacion }}</td>
+            <td>{{ cotizacion.nombre_cliente }}</td>
+            <td>{{ cotizacion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+            <td>
+                <!-- Enlace para descargar el PDF -->
+                <a href="{{ url_for('descargar_pdf', cotizacion_id=cotizacion.id) }}" class="btn-descargar">
+                    Descargar PDF
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

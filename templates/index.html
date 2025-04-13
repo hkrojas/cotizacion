@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Generador de Cotizaciones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #004aad;
+            text-align: center;
+        }
+        label {
+            display: inline-block;
+            width: 200px;
+            font-weight: bold;
+        }
+        input, select {
+            padding: 8px;
+            margin-bottom: 10px;
+            width: 300px;
+        }
+        button {
+            background-color: #004aad;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #003a87;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background-color: #004aad;
+            color: white;
+            padding: 10px;
+        }
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        input[type="submit"] {
+            background-color: #004aad;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: block;
+            margin: 20px auto;
+            width: auto;
+        }
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+    <script>
+        // Función para convertir a mayúsculas
+        function convertirAMayusculas(event) {
+            event.target.value = event.target.value.toUpperCase();
+        }
+
+        // Función para consultar datos SUNAT/RENIEC
+        function consultarDatos() {
+            const tipo_documento = document.getElementById('documento').value;
+            const numero_documento = document.getElementById('nro_documento').value.trim();
+            
+            if (!numero_documento) {
+                alert('Por favor ingrese un número de documento');
+                return;
+            }
+
+            // Mostrar indicador de carga
+            document.getElementById('btnBuscar').disabled = true;
+            document.getElementById('btnBuscar').textContent = 'Buscando...';
+
+            fetch('/consultar_api', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    tipo_documento: tipo_documento,
+                    numero_documento: numero_documento
+                })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('nombre_cliente').value = data.nombre || '';
+                    document.getElementById('direccion_cliente').value = data.direccion || '';
+                } else {
+                    alert(data.message || 'No se encontraron datos');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al consultar: ' + error.message);
+            })
+            .finally(() => {
+                document.getElementById('btnBuscar').disabled = false;
+                document.getElementById('btnBuscar').textContent = 'Buscar Datos';
+            });
+        }
+
+        // Función para agregar filas de productos
+        function agregarProducto() {
+            const tabla = document.getElementById('productos').getElementsByTagName('tbody')[0];
+            const nuevaFila = tabla.insertRow();
+            
+            nuevaFila.innerHTML = `
+                <td><input type="text" name="descripcion[]" required oninput="convertirAMayusculas(event)"></td>
+                <td><input type="number" name="unidades[]" min="1" required></td>
+                <td><input type="number" name="total[]" step="0.01" min="0" required></td>
+                <td><button type="button" onclick="eliminarFila(this)" class="btn-eliminar">Eliminar</button></td>
+            `;
+        }
+
+        // Función para eliminar fila
+        function eliminarFila(btn) {
+            const fila = btn.parentNode.parentNode;
+            fila.parentNode.removeChild(fila);
+        }
+
+        // Validación del formulario antes de enviar
+        function validarFormulario() {
+            const nombre = document.getElementById('nombre_cliente').value.trim();
+            const direccion = document.getElementById('direccion_cliente').value.trim();
+            const filas = document.querySelectorAll('#productos tbody tr');
+            
+            if (!nombre || !direccion) {
+                alert('Por favor complete todos los campos del cliente');
+                return false;
+            }
+            
+            if (filas.length < 1) {
+                alert('Debe agregar al menos un producto');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Manejo del envío del formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('cotizacionForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                if (!validarFormulario()) {
+                    return;
+                }
+                
+                const formData = new FormData(this);
+                
+                // Mostrar loader
+                const submitBtn = this.querySelector('[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.value = 'Generando...';
+                document.getElementById('loader').style.display = 'block';
+                
+                fetch('/generar_pdf', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.error || 'Error en el servidor');
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Crear URL para el blob y forzar descarga
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'cotizacion.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    alert('Cotización generada correctamente');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.value = 'Generar Cotización';
+                    document.getElementById('loader').style.display = 'none';
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Generador de Cotizaciones</h1>
+    <form id="cotizacionForm" onsubmit="return validarFormulario()">
+        <div>
+            <label for="documento">DOCUMENTO:</label>
+            <select id="documento" name="documento" required>
+                <option value="DNI">DNI</option>
+                <option value="RUC">RUC</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="nro_documento">NÚMERO:</label>
+            <input type="text" id="nro_documento" name="nro_documento" required>
+            <button type="button" id="btnBuscar" onclick="consultarDatos()">Buscar Datos</button>
+        </div>
+
+        <div>
+            <label for="nombre_cliente">NOMBRE DEL CLIENTE:</label>
+            <input type="text" id="nombre_cliente" name="nombre_cliente" required oninput="convertirAMayusculas(event)">
+        </div>
+
+        <div>
+            <label for="direccion_cliente">DIRECCIÓN:</label>
+            <input type="text" id="direccion_cliente" name="direccion_cliente" required oninput="convertirAMayusculas(event)">
+        </div>
+
+        <div>
+            <label for="moneda">MONEDA:</label>
+            <select id="moneda" name="moneda" required>
+                <option value="SOLES">SOLES</option>
+                <option value="DOLARES">DÓLARES</option>
+            </select>
+        </div>
+
+        <h2>Productos</h2>
+        <table id="productos">
+            <thead>
+                <tr>
+                    <th>DESCRIPCIÓN</th>
+                    <th>UNIDADES</th>
+                    <th>TOTAL</th>
+                    <th>ACCIÓN</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" name="descripcion[]" required oninput="convertirAMayusculas(event)"></td>
+                    <td><input type="number" name="unidades[]" min="1" required></td>
+                    <td><input type="number" name="total[]" step="0.01" min="0" required></td>
+                    <td><button type="button" onclick="eliminarFila(this)" class="btn-eliminar">Eliminar</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button type="button" onclick="agregarProducto()">Agregar Producto</button>
+
+        <div id="loader" class="loader">Generando PDF...</div>
+
+        <input type="submit" value="Generar Cotización">
+    </form>
+
+    <button onclick="window.location.href='/ver_cotizaciones';">Ver Cotizaciones</button> <!-- Aquí está el botón -->
+</body>
+</html>
