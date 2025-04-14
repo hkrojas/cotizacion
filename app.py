@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer, Paragraph
 from reportlab.lib import colors
@@ -12,12 +12,16 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 
 app = Flask(__name__, template_folder='templates')
-load_dotenv() 
+load_dotenv()
 
 # Configuración de la base de datos PostgreSQL en Render
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')  # Usamos la variable de entorno DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# Usuario y contraseña para el login básico
+USUARIO = 'hhugo'
+CONTRASEÑA = '22673061'
 
 class Cotizacion(db.Model):
     __tablename__ = 'cotizacion'  # Asegúrate de usar el nombre correcto de la tabla en minúsculas
@@ -51,8 +55,18 @@ os.makedirs(PDF_DIR, exist_ok=True)
 COLOR_PRINCIPAL = colors.HexColor('#004aad')
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def login():
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def login_post():
+    usuario = request.form['username']
+    contrasena = request.form['password']
+    
+    if usuario == USUARIO and contrasena == CONTRASEÑA:
+        return render_template('index.html') # Redirige a la página de cotizaciones
+    else:
+        return 'Credenciales incorrectas, por favor intente de nuevo.'
 
 @app.route('/consultar_api', methods=['POST'])
 def consultar_api():
@@ -177,8 +191,8 @@ def generar_pdf():
             ancho_total * 0.50,
             ancho_total * 0.20
         ])
-        
-        estilo_principal = TableStyle([  
+
+        tabla_principal.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('SPAN', (0, 0), (0, -1)),
@@ -192,8 +206,8 @@ def generar_pdf():
             ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
             ('BOTTOMMARGIN', (0, 0), (-1, -1), 0),
             ('TOPMARGIN', (0, 0), (-1, -1), 0),
-        ])
-        tabla_principal.setStyle(estilo_principal)
+        ]))
+
         elementos.append(tabla_principal)
         elementos.append(Spacer(1, 20))
 
@@ -210,7 +224,7 @@ def generar_pdf():
             ancho_total * 0.15
         ])
         
-        estilo_cliente = TableStyle([  
+        tabla_cliente.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
@@ -221,11 +235,11 @@ def generar_pdf():
             ('RIGHTPADDING', (0, 0), (-1, -1), 3),
             ('TOPPADDING', (0, 0), (-1, -1), 5),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ])
-        tabla_cliente.setStyle(estilo_cliente)
+        ]))
         elementos.append(tabla_cliente)
         elementos.append(Spacer(1, 20))
 
+        # Generación de la tabla de productos
         data_productos = [["Descripción", "Cantidad", "P.Unit", "IGV", "Precio"]]
         
         for i in range(len(descripciones)):
@@ -250,7 +264,7 @@ def generar_pdf():
             ancho_total * 0.15
         ])
         
-        estilo_productos = TableStyle([  
+        tabla_productos.setStyle(TableStyle([  
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
@@ -262,8 +276,7 @@ def generar_pdf():
             ('RIGHTPADDING', (0, 0), (-1, -1), 3),
             ('TOPPADDING', (0, 0), (-1, -1), 5),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ])
-        tabla_productos.setStyle(estilo_productos)
+        ]))
         elementos.append(tabla_productos)
 
         data_total = [  
@@ -277,7 +290,7 @@ def generar_pdf():
             ancho_total * 0.15
         ])
         
-        estilo_total = TableStyle([  
+        tabla_total.setStyle(TableStyle([  
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
@@ -289,8 +302,7 @@ def generar_pdf():
             ('RIGHTPADDING', (0, 0), (-1, -1), 3),
             ('TOPPADDING', (0, 0), (-1, -1), 5),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ])
-        tabla_total.setStyle(estilo_total)
+        ]))
         elementos.append(tabla_total)
 
         data_monto = [  
@@ -301,7 +313,7 @@ def generar_pdf():
             ancho_total * 1
         ])
         
-        estilo_monto = TableStyle([  
+        tabla_monto.setStyle(TableStyle([  
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
@@ -311,10 +323,8 @@ def generar_pdf():
             ('RIGHTPADDING', (0, 0), (-1, -1), 3),
             ('TOPPADDING', (0, 0), (-1, -1), 5),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ])
-        tabla_monto.setStyle(estilo_monto)
+        ]))
         elementos.append(tabla_monto)
-        elementos.append(Spacer(1, 20))
 
         data_banco = [  
             ["Datos para la Transferencia Beneficiario PAPELERÍA GRÁFICA Y PUBLICITARIA"],
@@ -328,7 +338,7 @@ def generar_pdf():
             ancho_total * 1
         ])
         
-        estilo_banco = TableStyle([  
+        tabla_banco.setStyle(TableStyle([  
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('FONTNAME', (0, 0), (-1, 1), 'Helvetica'),
@@ -341,8 +351,7 @@ def generar_pdf():
             ('RIGHTPADDING', (0, 0), (-1, -1), 3),
             ('TOPPADDING', (0, 0), (-1, -1), 3),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ])
-        tabla_banco.setStyle(estilo_banco)
+        ]))
         elementos.append(tabla_banco)
 
         def agregar_rectangulo_azul(canvas, doc):
@@ -386,7 +395,7 @@ def generar_pdf():
             'success': False,
             'error': f'Error al generar PDF: {str(e)}'
         }), 500
-    
+
 @app.route('/ver_cotizaciones')
 def ver_cotizaciones():
     cotizaciones = Cotizacion.query.all()  # Obtener todas las cotizaciones
