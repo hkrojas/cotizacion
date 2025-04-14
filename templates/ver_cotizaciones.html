@@ -2,30 +2,43 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cotizaciones</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            width: 100%;
+            max-width: 100%;
         }
+
         h1 {
             color: #004aad;
             text-align: center;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
+            font-size: 14px;
         }
+
         th {
             background-color: #004aad;
             color: white;
             padding: 10px;
         }
+
         td {
             padding: 8px;
             border: 1px solid #ddd;
         }
+
         .btn-descargar {
             background-color: #004aad;
             color: white;
@@ -33,9 +46,42 @@
             cursor: pointer;
             border-radius: 4px;
             text-decoration: none;
+            display: inline-block;
         }
+
         .btn-descargar:hover {
             background-color: #003a87;
+        }
+
+        /* Para pantallas pequeñas (por ejemplo, teléfonos) */
+        @media (max-width: 767px) {
+            table {
+                font-size: 12px;
+            }
+
+            .btn-descargar {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+
+        /* Para pantallas medianas (por ejemplo, tablets) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            table {
+                font-size: 13px;
+            }
+
+            .btn-descargar {
+                padding: 7px 11px;
+                font-size: 14px;
+            }
+        }
+
+        /* Para pantallas grandes (por ejemplo, computadoras de escritorio) */
+        @media (min-width: 1025px) {
+            body {
+                width: 800px; /* Fijo el tamaño para pantallas grandes */
+            }
         }
     </style>
 </head>

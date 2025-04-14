@@ -2,53 +2,68 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Cotizaciones</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            width: 100%;
+            max-width: 100%;
         }
+
         h1 {
             color: #004aad;
             text-align: center;
         }
+
         label {
             display: inline-block;
-            width: 200px;
+            width: 100%; /* Los labels ocupan todo el ancho en pantallas pequeñas */
             font-weight: bold;
         }
-        input, select {
-            padding: 8px;
-            margin-bottom: 10px;
-            width: 300px;
+
+        input, select, button {
+            padding: 12px;
+            margin-bottom: 15px;
+            width: 100%; /* Los inputs y botones ocupan todo el ancho */
         }
+
         button {
             background-color: #004aad;
             color: white;
             border: none;
-            padding: 10px 15px;
             cursor: pointer;
             border-radius: 4px;
         }
+
         button:hover {
             background-color: #003a87;
         }
+
         table {
-            width: 100%;
+            width: 100%; /* Aseguramos que la tabla ocupe todo el ancho */
             border-collapse: collapse;
             margin: 20px 0;
+            font-size: 14px; /* Reducimos el tamaño de la fuente en pantallas pequeñas */
         }
+
         th {
             background-color: #004aad;
             color: white;
             padding: 10px;
         }
+
         td {
             padding: 8px;
             border: 1px solid #ddd;
         }
+
         input[type="submit"] {
             background-color: #004aad;
             color: white;
@@ -61,10 +76,44 @@
             margin: 20px auto;
             width: auto;
         }
+
         .loader {
             display: none;
             text-align: center;
             margin: 20px 0;
+        }
+
+        /* Para pantallas pequeñas (por ejemplo, teléfonos) */
+        @media (max-width: 767px) {
+            label {
+                width: 100%;
+            }
+
+            table {
+                font-size: 12px; /* Reducimos el tamaño de la fuente */
+            }
+
+            input, select, button {
+                width: 100%; /* Los inputs y botones ocupan todo el ancho */
+            }
+
+            button {
+                font-size: 14px; /* Botones más pequeños en móviles */
+            }
+        }
+
+        /* Para pantallas medianas (por ejemplo, tablets) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            input, select, button {
+                width: 80%; /* Reducimos el ancho en pantallas medianas */
+            }
+        }
+
+        /* Para pantallas grandes (por ejemplo, computadoras de escritorio) */
+        @media (min-width: 1025px) {
+            body {
+                width: 800px; /* Mantener el tamaño fijo para pantallas grandes */
+            }
         }
     </style>
     <script>
@@ -273,6 +322,6 @@
         <input type="submit" value="Generar Cotización">
     </form>
 
-    <button onclick="window.location.href='/ver_cotizaciones';">Ver Cotizaciones</button> <!-- Aquí está el botón -->
+    <button onclick="window.location.href='/ver_cotizaciones';">Ver Cotizaciones</button>
 </body>
 </html>
