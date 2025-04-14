@@ -54,6 +54,20 @@ os.makedirs(PDF_DIR, exist_ok=True)
 # Estilo corporativo
 COLOR_PRINCIPAL = colors.HexColor('#004aad')
 
+def dividir_texto(texto, max_palabras=5):
+    """
+    Divide un texto en fragmentos, asegurando que cada fragmento no supere el número máximo de palabras.
+    """
+    palabras = texto.split()
+    fragmentos = []
+
+    while palabras:
+        fragmento = ' '.join(palabras[:max_palabras])
+        fragmentos.append(fragmento)
+        palabras = palabras[max_palabras:]
+
+    return fragmentos
+
 @app.route('/')
 def login():
     return render_template('login.html')
@@ -248,8 +262,12 @@ def generar_pdf():
             precio_unit = total / unidad if unidad != 0 else 0
             igv_producto = total * 0.18
             
+            # Dividir la descripción si es demasiado larga
+            fragmentos_descripcion = dividir_texto(descripciones[i])
+            descripcion_completa = '\n'.join(fragmentos_descripcion)
+
             data_productos.append([  
-                descripciones[i].upper(),
+                descripcion_completa,  # Descripción dividida en fragmentos
                 f"{unidad}",
                 f"{simbolo} {precio_unit:.2f}",
                 f"{simbolo} {igv_producto:.2f}",
@@ -257,8 +275,8 @@ def generar_pdf():
             ])
         
         tabla_productos = Table(data_productos, colWidths=[  
-            ancho_total * 0.40,
-            ancho_total * 0.15,
+            ancho_total * 0.45,
+            ancho_total * 0.10,
             ancho_total * 0.15,
             ancho_total * 0.15,
             ancho_total * 0.15
@@ -276,7 +294,11 @@ def generar_pdf():
             ('RIGHTPADDING', (0, 0), (-1, -1), 3),
             ('TOPPADDING', (0, 0), (-1, -1), 5),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('WORDWRAP', (0, 0), (-1, -1), True),  # Asegura el salto de línea en las celdas
+            ('SPLITBY', (0, 0), (-1, -1), True),   # Forzar salto de línea si es necesario
+            ('VALIGN', (0, 0), (-1, -1), 'TOP')    # Asegura que el texto quede alineado en la parte superior
         ]))
+        
         elementos.append(tabla_productos)
 
         data_total = [  

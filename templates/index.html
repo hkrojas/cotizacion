@@ -24,14 +24,14 @@
 
         label {
             display: inline-block;
-            width: 100%; /* Los labels ocupan todo el ancho en pantallas pequeñas */
+            width: 100%;
             font-weight: bold;
         }
 
         input, select, button {
             padding: 12px;
             margin-bottom: 15px;
-            width: 100%; /* Los inputs y botones ocupan todo el ancho */
+            width: 100%;
         }
 
         button {
@@ -47,10 +47,10 @@
         }
 
         table {
-            width: 100%; /* Aseguramos que la tabla ocupe todo el ancho */
+            width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
-            font-size: 14px; /* Reducimos el tamaño de la fuente en pantallas pequeñas */
+            font-size: 14px;
         }
 
         th {
@@ -62,6 +62,8 @@
         td {
             padding: 8px;
             border: 1px solid #ddd;
+            word-wrap: break-word;  /* Ajusta el texto largo en las celdas */
+            white-space: normal;    /* Permite que el texto se ajuste en varias líneas */
         }
 
         input[type="submit"] {
@@ -83,46 +85,41 @@
             margin: 20px 0;
         }
 
-        /* Para pantallas pequeñas (por ejemplo, teléfonos) */
         @media (max-width: 767px) {
             label {
                 width: 100%;
             }
 
             table {
-                font-size: 12px; /* Reducimos el tamaño de la fuente */
+                font-size: 12px;
             }
 
             input, select, button {
-                width: 100%; /* Los inputs y botones ocupan todo el ancho */
+                width: 100%;
             }
 
             button {
-                font-size: 14px; /* Botones más pequeños en móviles */
+                font-size: 14px;
             }
         }
 
-        /* Para pantallas medianas (por ejemplo, tablets) */
         @media (min-width: 768px) and (max-width: 1024px) {
             input, select, button {
-                width: 80%; /* Reducimos el ancho en pantallas medianas */
+                width: 80%;
             }
         }
 
-        /* Para pantallas grandes (por ejemplo, computadoras de escritorio) */
         @media (min-width: 1025px) {
             body {
-                width: 800px; /* Mantener el tamaño fijo para pantallas grandes */
+                width: 800px;
             }
         }
     </style>
     <script>
-        // Función para convertir a mayúsculas
         function convertirAMayusculas(event) {
             event.target.value = event.target.value.toUpperCase();
         }
 
-        // Función para consultar datos SUNAT/RENIEC
         function consultarDatos() {
             const tipo_documento = document.getElementById('documento').value;
             const numero_documento = document.getElementById('nro_documento').value.trim();
@@ -132,7 +129,6 @@
                 return;
             }
 
-            // Mostrar indicador de carga
             document.getElementById('btnBuscar').disabled = true;
             document.getElementById('btnBuscar').textContent = 'Buscando...';
 
@@ -168,7 +164,6 @@
             });
         }
 
-        // Función para agregar filas de productos
         function agregarProducto() {
             const tabla = document.getElementById('productos').getElementsByTagName('tbody')[0];
             const nuevaFila = tabla.insertRow();
@@ -181,13 +176,11 @@
             `;
         }
 
-        // Función para eliminar fila
         function eliminarFila(btn) {
             const fila = btn.parentNode.parentNode;
             fila.parentNode.removeChild(fila);
         }
 
-        // Validación del formulario antes de enviar
         function validarFormulario() {
             const nombre = document.getElementById('nombre_cliente').value.trim();
             const direccion = document.getElementById('direccion_cliente').value.trim();
@@ -206,7 +199,6 @@
             return true;
         }
 
-        // Manejo del envío del formulario
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('cotizacionForm').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -217,7 +209,6 @@
                 
                 const formData = new FormData(this);
                 
-                // Mostrar loader
                 const submitBtn = this.querySelector('[type="submit"]');
                 submitBtn.disabled = true;
                 submitBtn.value = 'Generando...';
@@ -236,7 +227,6 @@
                     return response.blob();
                 })
                 .then(blob => {
-                    // Crear URL para el blob y forzar descarga
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
