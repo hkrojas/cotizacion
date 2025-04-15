@@ -54,7 +54,7 @@ os.makedirs(PDF_DIR, exist_ok=True)
 # Estilo corporativo
 COLOR_PRINCIPAL = colors.HexColor('#004aad')
 
-def dividir_texto(texto, max_palabras=5):
+def dividir_texto(texto, max_palabras=7):
     """
     Divide un texto en fragmentos, asegurando que cada fragmento no supere el número máximo de palabras.
     """
@@ -65,6 +65,20 @@ def dividir_texto(texto, max_palabras=5):
         fragmento = ' '.join(palabras[:max_palabras])
         fragmentos.append(fragmento)
         palabras = palabras[max_palabras:]
+
+    return fragmentos
+
+def dividir_direccion(direccion, max_palabras=9):
+    """
+    Divide una dirección en fragmentos, asegurando que cada fragmento no supere el número máximo de palabras.
+    """
+    palabras = direccion.split()
+    fragmentos = []
+
+    while palabras:
+        fragmento = ' '.join(palabras[:max_palabras])  # Se toma un fragmento de 'max_palabras' palabras.
+        fragmentos.append(fragmento)
+        palabras = palabras[max_palabras:]  # Se eliminan las palabras ya procesadas.
 
     return fragmentos
 
@@ -225,12 +239,19 @@ def generar_pdf():
         elementos.append(tabla_principal)
         elementos.append(Spacer(1, 20))
 
+        # Cambié aquí: ahora se muestra correctamente el nombre del cliente y la dirección dividida
         data_cliente = [
             ["Señores:", nombre_cliente, " Emisión:", fecha_emision],
             [f"{tipo_documento}:", nro_documento, " Vencimiento:", fecha_vencimiento],
             ["Dirección:", direccion_cliente, " Moneda:", moneda]
         ]
         
+        # Dividir la dirección si es necesario
+        fragmentos_direccion = dividir_direccion(direccion_cliente)
+        direccion_completa = '\n'.join(fragmentos_direccion)
+
+        data_cliente[2][1] = direccion_completa  # Cambié solo la dirección aquí
+
         tabla_cliente = Table(data_cliente, colWidths=[  
             ancho_total * 0.10,
             ancho_total * 0.60,
