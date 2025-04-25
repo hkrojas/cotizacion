@@ -2,12 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Login</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             padding: 20px;
+            /* Añadir esto para evitar un padding excesivo en pantallas pequeñas */
+            box-sizing: border-box; 
         }
         .login-container {
             background-color: #fff;
@@ -16,13 +18,20 @@
             margin: 0 auto;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* Añadir esto para que en pantallas muy pequeñas el padding no cause scroll horizontal */
+            box-sizing: border-box; 
+            width: 90%; /* Ajuste para que no sea un ancho fijo de 400px, sino un porcentaje */
+            max-width: 400px; /* Mantenemos el max-width para pantallas grandes */
         }
         h2 {
             text-align: center;
             color: #004aad;
+            margin-bottom: 20px; /* Añadido para separar del formulario */
         }
         label {
             font-weight: bold;
+            display: block; /* Hace que la etiqueta ocupe su propia línea */
+            margin-bottom: 5px; /* Espacio entre label e input */
         }
         input[type="text"], input[type="password"] {
             width: 100%;
@@ -30,6 +39,7 @@
             margin-bottom: 15px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            box-sizing: border-box; /* Asegura que el padding no aumente el ancho total */
         }
         button {
             width: 100%;
@@ -39,9 +49,19 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 16px; /* Ajuste de tamaño de fuente */
         }
         button:hover {
             background-color: #003a87;
+        }
+         /* Opcional: Añadir media query básica si necesitas ajustes específicos para móviles */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px; /* Menos padding en pantallas pequeñas */
+            }
+            .login-container {
+                padding: 20px; /* Menos padding dentro del contenedor */
+            }
         }
     </style>
 </head>
