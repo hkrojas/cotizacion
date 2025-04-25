@@ -38,49 +38,29 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
             overflow-x: auto;
-            /* position: relative; REMOVED or keep if needed for other things */
+            position: relative;
         }
-
-        /* === Nuevo contenedor para el encabezado === */
-        .page-header {
-            display: flex; /* Usamos Flexbox */
-            align-items: center; /* Alinea verticalmente al centro */
-            justify-content: space-between; /* Distribuye el espacio entre elementos */
-            margin-bottom: 20px; /* Espacio debajo del encabezado */
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan si no caben */
-            gap: 10px; /* Espacio entre los elementos flex */
-        }
-        /* === Fin Nuevo contenedor === */
-
 
         h1 {
             color: var(--color-primario);
-            /* text-align: center; Ya no es necesario centrar así con Flexbox */
-            /* margin-bottom: 20px; Movido al .page-header */
-            /* margin-top: 30px; Removido, el padding del container o margin top del page-header es suficiente */
+            text-align: center;
+            margin-bottom: 20px;
             font-size: 24px;
-            flex-grow: 1; /* Permite que el h1 crezca y ocupe el espacio disponible */
-            text-align: center; /* Centra el texto DENTRO del espacio que ocupa el h1 */
-            margin: 0; /* Reinicia los márgenes por si acaso */
-             min-width: 0; /* Permite que el h1 se encoja en pantallas pequeñas si es necesario */
+            margin-top: 30px;
         }
 
         .back-arrow {
-            /* === REMOVIDA POSICIÓN ABSOLUTA === */
-            /* position: absolute; */
-            /* top: 20px; */
-            /* left: 20px; */
-            /* z-index: 10; */
-            /* ================================= */
-
+            position: absolute;
+            top: 20px;
+            left: 20px;
             font-size: 24px;
             color: var(--color-primario);
             text-decoration: none;
             cursor: pointer;
+            z-index: 10;
             display: flex;
             align-items: center;
             gap: 5px;
-             flex-shrink: 0; /* Evita que la flecha se encoja si el h1 necesita mucho espacio */
         }
 
         .back-arrow:hover {
@@ -90,7 +70,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px; /* Mantener si necesitas espacio entre el encabezado y la tabla */
+            margin-top: 20px;
         }
 
         th, td {
@@ -105,7 +85,6 @@
             font-weight: bold;
             position: sticky;
             top: 0;
-            z-index: 1; /* Asegura que el encabezado de la tabla esté encima del contenido al hacer scroll */
         }
 
         tr:hover {
@@ -173,7 +152,6 @@
             display: none;
         }
 
-         /* --- Modal Styles --- */
         .modal {
             display: none;
             position: fixed;
@@ -184,7 +162,6 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.4);
-            animation: fadeIn 0.3s; /* Added fade animation */
         }
 
         .modal-contenido {
@@ -196,7 +173,6 @@
             max-width: 800px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-             animation: slideInTop 0.3s; /* Added slide-in animation */
         }
 
         .cerrar {
@@ -226,30 +202,12 @@
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
-             box-sizing: border-box; /* Added for consistency */
         }
 
         .form-group textarea {
             min-height: 100px;
             resize: vertical;
         }
-        
-         /* Styles for the product items within the modal */
-        .producto-edicion {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-         .producto-edicion h4 {
-             margin-top: 0;
-             margin-bottom: 10px;
-         }
-
-         .producto-edicion .form-group {
-             margin-bottom: 10px; /* Less space between product form groups */
-         }
-
 
         .modal-carga {
             display: none;
@@ -295,42 +253,15 @@
             to { transform: rotate(360deg); }
         }
 
-        @keyframes fadeIn {
-             from { opacity: 0; }
-             to { opacity: 1; }
-        }
-
-        @keyframes slideInTop {
-            from { transform: translate(-50%, -60%); opacity: 0; }
-            to { transform: translate(-50%, -50%); opacity: 1; }
-        }
-
-
-        /* --- Media Queries (Responsividad) --- */
         @media (max-width: 768px) {
-             body {
-                 padding: 10px; /* Menos padding en pantallas pequeñas */
-             }
             .container {
-                padding: 15px; /* Ajusta el padding del contenedor principal */
-            }
-            
-            /* Ajusta el espacio del encabezado en pantallas más pequeñas */
-            .page-header {
-                gap: 8px; /* Menos espacio entre elementos */
-                margin-bottom: 15px; /* Menos espacio debajo */
+                padding: 10px;
             }
 
-            .back-arrow {
-                font-size: 20px; /* Flecha un poco más pequeña */
-                /* margin-right handled by gap */
+            table {
+                display: block;
+                overflow-x: auto;
             }
-
-            h1 {
-                font-size: 20px; /* Título más pequeño */
-                /* Flex centering remains */
-            }
-
 
             th, td {
                 padding: 8px 10px;
@@ -342,81 +273,42 @@
                 font-size: 12px;
             }
 
+            h1 {
+                font-size: 20px;
+            }
+
             .modal-contenido {
                 width: 95%;
                 margin: 10% auto;
-                padding: 15px; /* Ajusta el padding del modal */
             }
-             
-             .producto-edicion {
-                 padding: 8px; /* Ajusta el padding del producto en el modal */
-             }
-             .producto-edicion .form-group {
-                 margin-bottom: 8px; /* Menos espacio entre los campos del producto */
-             }
         }
 
         @media (max-width: 480px) {
-            /* En pantallas muy pequeñas, apila la flecha y el título */
-            .page-header {
-                 flex-direction: column; /* Apila elementos verticalmente */
-                 align-items: flex-start; /* Alinea los elementos apilados a la izquierda */
-                 gap: 5px; /* Menos espacio cuando están apilados */
-            }
-             
-             .back-arrow {
-                 margin-right: 0; /* Remueve el margen derecho */
-                 margin-bottom: 5px; /* Añade un pequeño espacio debajo de la flecha */
-             }
-
-             h1 {
-                 text-align: left; /* Alinea el título a la izquierda cuando está apilado */
-                 flex-grow: 0; /* No fuerces al h1 a crecer cuando está apilado */
-             }
-
-
             .acciones {
-                flex-direction: column; /* Apila los botones de acción */
+                flex-direction: column;
             }
 
             .btn {
-                width: 100%; /* Haz que los botones de acción ocupen todo el ancho */
+                width: 100%;
                 margin-bottom: 5px;
                 margin-right: 0;
             }
-
-            /* Ajustes para los campos de producto en el modal cuando están apilados */
-            .producto-edicion > div:nth-child(3) { /* Selecciona el div con unidades y total */
-                 grid-template-columns: 1fr; /* Cambia a una sola columna */
-                 gap: 8px; /* Ajusta el espacio entre los campos apilados */
-             }
-             .producto-edicion > div:nth-child(3) .form-group {
-                 margin-bottom: 0; /* Remueve el margen inferior cuando están apilados */
-             }
         }
-         
-         /* Asegura que la tabla sea horizontalmente desplazable si su contenido es muy ancho */
-        .container table {
-             min-width: 500px; /* Establece un ancho mínimo para la tabla */
-             width: 100%; /* Permite que la tabla ocupe el 100% hasta el min-width */
-         }
-
-
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="page-header">
-            <a href="/index" class="back-arrow">&larr; Volver</a>
-            <h1>Ver Cotizaciones</h1>
-        </div>
+        <a href="/index" class="back-arrow">&larr; Volver</a>
+
+        <h1>Ver Cotizaciones</h1>
+
         <div id="mensaje-exito" class="mensaje-exito"></div>
         <div id="mensaje-error" class="mensaje-error"></div>
 
         <table>
             <thead>
                 <tr>
-                     <th>N° Cotización</th>
+                    <th>N° Cotización</th>
                     <th>Cliente</th>
                     <th>Fecha de Creación</th>
                     <th>Acciones</th>
@@ -430,13 +322,13 @@
                     <td>{{ cotizacion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
                     <td class="acciones">
                         <button class="btn btn-descargar" onclick="descargarPDF('{{ cotizacion.id }}')">
-                             Descargar
+                            Descargar
                         </button>
                         <button class="btn btn-editar" onclick="mostrarModalEdicion('{{ cotizacion.id }}')">
-                             Editar
+                            Editar
                         </button>
                         <button class="btn btn-eliminar" onclick="eliminarCotizacion('{{ cotizacion.id }}', this)">
-                             Eliminar
+                            Eliminar
                         </button>
                     </td>
                 </tr>
@@ -485,20 +377,20 @@
 
                 <div id="productos-container">
                     <h3>Productos</h3>
-                    </div>
+                </div>
 
                 <button type="button" class="btn" onclick="agregarProductoEdicion()"
-                             style="background-color: var(--color-primario); color: white; margin-top: 10px;">
-                     + Agregar Producto
+                         style="background-color: var(--color-primario); color: white; margin-top: 10px;">
+                    + Agregar Producto
                 </button>
 
                 <div style="margin-top: 20px; text-align: right;">
                     <button type="button" class="btn btn-editar" onclick="cerrarModal()">
-                         Cancelar
+                        Cancelar
                     </button>
                     <button type="submit" class="btn"
-                                 style="background-color: var(--color-primario); color: white;">
-                         Guardar Cambios
+                            style="background-color: var(--color-primario); color: white;">
+                        Guardar Cambios
                     </button>
                 </div>
             </form>
@@ -513,9 +405,6 @@
     </div>
 
     <script>
-         // Las funciones JavaScript permanecen en gran parte iguales, con algunos pequeños ajustes
-         // para manejar los nuevos nombres de atributos de input en agregarProductoEdicion y el submit.
-
         function mostrarMensaje(tipo, mensaje) {
             const elemento = document.getElementById(`mensaje-${tipo}`);
             elemento.textContent = mensaje;
@@ -529,7 +418,7 @@
         function mostrarSpinner(mostrar, mensaje = 'Guardando cambios...') {
             const modalCarga = document.getElementById('modalCarga');
             const spinnerMsg = document.getElementById('spinner-message');
-
+            
             if (mostrar) {
                 spinnerMsg.textContent = mensaje;
                 modalCarga.style.display = 'block';
@@ -580,9 +469,7 @@
         function cerrarModal() {
             modalEdicion.style.display = "none";
             document.getElementById("formEdicion").reset();
-             // Limpiar los productos pero mantener el título
-            const productosContainer = document.getElementById("productos-container");
-            productosContainer.innerHTML = '<h3>Productos</h3>';
+            document.getElementById("productos-container").innerHTML = '<h3>Productos</h3>';
         }
 
         window.onclick = function(event) {
@@ -592,13 +479,11 @@
         }
 
         async function mostrarModalEdicion(cotizacionId) {
-            mostrarSpinner(true, "Cargando cotización..."); // Mostrar spinner al cargar datos
             try {
                 const response = await fetch(`/obtener_cotizacion/${cotizacionId}`);
                 const data = await response.json();
 
                 if (!response.ok) {
-                    mostrarSpinner(false); // Ocultar spinner si hay error
                     const errorMsg = data.error || 'Error desconocido al cargar';
                     throw new Error(`Error ${response.status}: ${errorMsg}`);
                 }
@@ -612,23 +497,21 @@
                 document.getElementById("edit-moneda").value = data.moneda || 'SOLES';
 
                 const productosContainer = document.getElementById("productos-container");
-                productosContainer.innerHTML = '<h3>Productos</h3>'; // Limpiar productos previos
+                productosContainer.innerHTML = '<h3>Productos</h3>';
 
                 if (data.productos && Array.isArray(data.productos) && data.productos.length > 0) {
                     data.productos.forEach((producto, index) => {
                         agregarProductoEdicion(producto, index);
                     });
                 } else {
-                    agregarProductoEdicion(); // Agrega un producto vacío si no hay
+                    agregarProductoEdicion();
                 }
 
                 modalEdicion.style.display = "block";
-                 mostrarSpinner(false); // Ocultar spinner al terminar la carga exitosa
 
             } catch (error) {
                 console.error('Error:', error);
                 mostrarMensaje('error', error.message);
-                mostrarSpinner(false); // Asegurarse de ocultar spinner en caso de error
             }
         }
 
@@ -637,61 +520,52 @@
 
             const productoDiv = document.createElement("div");
             productoDiv.className = "producto-edicion";
+            productoDiv.style.marginBottom = "15px";
+            productoDiv.style.padding = "10px";
+            productoDiv.style.border = "1px solid #ddd";
+            productoDiv.style.borderRadius = "4px";
 
-            // Usar un ID temporal para los nuevos productos hasta que se guarden
-            const productoId = producto && producto.id ? producto.id : null; // Keep existing ID if present
-            const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`; // Always create a temp ID
-
-
-            const h4Text = index !== null ? `Producto ${index + 1}` : 'Nuevo Producto';
+            const productoId = producto && producto.id ? producto.id : `new-${Date.now()}`;
 
             productoDiv.innerHTML = `
-                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                     <h4>${h4Text}</h4>
-                     <button type="button" onclick="eliminarProductoEdicion(this)"
-                                 style="background: var(--color-error); color: white; border: none;
-                                         padding: 2px 6px; border-radius: 3px; cursor: pointer;">
-                         Eliminar
-                     </button>
-                 </div>
-                 <div class="form-group">
-                     <label>Descripción:</label>
-                     <input type="text" name="edit-descripcion" value="${producto ? producto.descripcion : ''}" required>
-                 </div>
-                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                     <div class="form-group">
-                         <label>Unidades:</label>
-                         <input type="number" name="edit-unidades" min="1" value="${producto ? producto.unidades : '1'}" required>
-                     </div>
-                     <div class="form-group">
-                         <label>Total:</label>
-                         <input type="number" name="edit-total" step="0.01" min="0" value="${producto ? producto.total : '0'}" required>
-                     </div>
-                 </div>
-                 <input type="hidden" name="edit-producto-id" value="${productoId ? productoId : ''}"> <input type="hidden" name="edit-temp-id" value="${tempId}"> `;
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <h4>Producto ${index !== null ? index + 1 : ''}</h4>
+                    <button type="button" onclick="eliminarProductoEdicion(this)"
+                            style="background: var(--color-error); color: white; border: none;
+                                     padding: 2px 6px; border-radius: 3px; cursor: pointer;">
+                        Eliminar
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <input type="text" name="edit-descripcion[]" value="${producto ? producto.descripcion : ''}" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Unidades:</label>
+                        <input type="number" name="edit-unidades[]" min="1" value="${producto ? producto.unidades : '1'}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Total:</label>
+                        <input type="number" name="edit-total[]" step="0.01" min="0" value="${producto ? producto.total : '0'}" required>
+                    </div>
+                </div>
+                <input type="hidden" name="edit-producto-id[]" value="${productoId}">
+            `;
 
             productosContainer.appendChild(productoDiv);
-             actualizarNumeracionProductos(); // Llama para actualizar los números visibles
         }
-
-         function actualizarNumeracionProductos() {
-             const productosDivs = document.querySelectorAll('.producto-edicion h4');
-             productosDivs.forEach((h4, index) => {
-                 h4.textContent = `Producto ${index + 1}`;
-             });
-         }
 
         function eliminarProductoEdicion(boton) {
             const productosDivs = document.querySelectorAll('.producto-edicion');
-              // Permite eliminar siempre que haya más de un producto.
-              if (productosDivs.length > 1) {
-                 boton.closest('.producto-edicion').remove();
-                 actualizarNumeracionProductos(); // Llama para actualizar los números después de eliminar
-             } else {
-                  alert('Debe haber al menos un producto en la cotización.');
-             }
+             if (productosDivs.length > 1) {
+                if (confirm('¿Eliminar este producto?')) {
+                    boton.closest('.producto-edicion').remove();
+                }
+            } else {
+                 alert('Debe haber al menos un producto en la cotización.');
+            }
         }
-
 
         document.getElementById("formEdicion").addEventListener("submit", async function(e) {
             e.preventDefault();
@@ -715,47 +589,31 @@
                  return;
             }
 
-            let allProductsValid = true;
             productosDivs.forEach(div => {
-                // Select inputs using the correct name attributes
-                 const descripcionInput = div.querySelector('input[name="edit-descripcion"]');
-                 const unidadesInput = div.querySelector('input[name="edit-unidades"]');
-                 const totalInput = div.querySelector('input[name="edit-total"]');
-                 const productoIdInput = div.querySelector('input[name="edit-producto-id"]'); // Existing product ID
-
+                 const descripcionInput = div.querySelector('input[name="edit-descripcion[]"]');
+                 const unidadesInput = div.querySelector('input[name="edit-unidades[]"]');
+                 const totalInput = div.querySelector('input[name="edit-total[]"]');
 
                  const descripcion = descripcionInput.value.trim();
                  const unidades = parseInt(unidadesInput.value);
                  const total = parseFloat(totalInput.value);
-                 const id = productoIdInput.value || null; // Use the existing ID or null for new products
-
 
                  if (descripcion && !isNaN(unidades) && unidades > 0 && !isNaN(total) && total >= 0) {
-                     formData.productos.push({
-                         id: id, // Include the existing product ID (will be null for new ones)
-                         descripcion: descripcion,
-                         unidades: unidades,
-                         total: total
-                     });
+                    formData.productos.push({
+                        descripcion: descripcion,
+                        unidades: unidades,
+                        total: total
+                    });
                  } else {
-                    // If any product is invalid, mark flag
-                     allProductsValid = false;
+                     mostrarMensaje('error', 'Por favor, complete todos los campos de los productos correctamente.');
                  }
             });
-
-            if (!allProductsValid) {
-                 mostrarMensaje('error', 'Por favor, complete todos los campos de los productos correctamente.');
-                 mostrarSpinner(false);
-                 return;
-            }
-
 
              if (formData.productos.length === 0) {
                   mostrarMensaje('error', 'No se pudieron validar los datos de los productos. Revise los campos.');
                   mostrarSpinner(false);
                   return;
              }
-
 
             try {
                 const response = await fetch(`/actualizar_cotizacion/${cotizacionId}`, {
@@ -776,12 +634,11 @@
 
                 if (data.success) {
                     mostrarSpinner(true, "¡Listo!");
-                    // Recargar la página para mostrar los datos actualizados
                     setTimeout(() => {
-                         mostrarSpinner(false);
-                         cerrarModal();
-                         location.reload(); // Recarga para reflejar los cambios
-                    }, 1500); // Espera un poco antes de recargar
+                        mostrarSpinner(false);
+                        cerrarModal();
+                        location.reload();
+                    }, 2000);
                 } else {
                     throw new Error(data.error || 'Error al procesar la solicitud en el servidor');
                 }
