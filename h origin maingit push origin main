@@ -1,0 +1,47 @@
+[33mcommit 0d8a6c21d60b54560773cd6344ac8433963c9d48[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: hkrojas <kennedyrojas01064@gmail.com>
+Date:   Sun Apr 13 21:02:16 2025 -0500
+
+    Agregado login.html y modificación en app.py para integración de login
+
+[33mcommit 749d7a0d273d45668040d5efa270702dcc67777a[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: hkrojas <kennedyrojas01064@gmail.com>
+Date:   Sun Apr 13 19:39:10 2025 -0500
+
+    Actualización del diseño responsive para los archivos index.html y ver_cotizaciones.html
+
+[33mcommit 2f658672f6b555079c1b5ccb6d2efbb318bf9f8e[m
+Author: hkrojas <kennedyrojas01064@gmail.com>
+Date:   Sun Apr 13 19:28:14 2025 -0500
+
+    Added gunicorn to requirements.txt
+
+[33mcommit 3a747c3a2d3572d45811481131dfcf24464ed4a8[m
+Author: hkrojas <kennedyrojas01064@gmail.com>
+Date:   Sun Apr 13 19:22:44 2025 -0500
+
+    Eliminar pywin32 de requirements.txt
+
+[33mcommit 9b8e46e59cc92e5647e7932e693c5d3672f6738b[m
+Author: hkrojas <kennedyrojas01064@gmail.com>
+Date:   Sun Apr 13 19:15:16 2025 -0500
+
+    Reemplazada pymsalruntime por una versión disponible
+
+[33mcommit ee74aa157e7e360757bda15c9ba3b978b8f1c08b[m
+Author: hkrojas <kennedyrojas01064@gmail.com>
+Date:   Sun Apr 13 19:09:08 2025 -0500
+
+    Agregar requests a requirements.txt
+
+[33mcommit d07c461e20df90b793be5d5ba02680afd817d181[m
+Author: hkrojas <kennedyrojas01064@gmail.com>
+Date:   Sat Apr 12 23:27:48 2025 -0500
+
+    Agregar gunicorn a requirements.txt
+
+[33mcommit 500f558f623b4b0a4f551a068b1a7132ddccc6ae[m
+Author: hkrojas <kennedyrojas01064@gmail.com>
+Date:   Sat Apr 12 23:21:47 2025 -0500
+
+    Primer commit de la aplicación Cotizaciones

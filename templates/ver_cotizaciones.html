@@ -3,117 +3,608 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotizaciones</title>
+    <title>Ver Cotizaciones</title>
     <style>
+        :root {
+            --color-primario: #004aad;
+            --color-secundario: #003a87;
+            --color-texto: #333;
+            --color-fondo: #f8f9fa;
+            --color-borde: #dee2e6;
+            --color-error: #dc3545;
+            --color-error-hover: #c82333;
+            --color-warning: #ffc107;
+            --color-warning-hover: #e0a800;
+        }
+
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            width: 100%;
-            max-width: 100%;
+            background-color: var(--color-fondo);
+            padding: 20px;
+            color: var(--color-texto);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-x: auto;
         }
 
         h1 {
-            color: #004aad;
+            color: var(--color-primario);
             text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-borde);
         }
 
         th {
-            background-color: #004aad;
+            background-color: var(--color-primario);
             color: white;
-            padding: 10px;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
         }
 
-        td {
-            padding: 8px;
-            border: 1px solid #ddd;
+        tr:hover {
+            background-color: rgba(0, 74, 173, 0.05);
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-right: 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
         }
 
         .btn-descargar {
-            background-color: #004aad;
+            background-color: var(--color-primario);
             color: white;
-            padding: 8px 12px;
-            cursor: pointer;
-            border-radius: 4px;
-            text-decoration: none;
-            display: inline-block;
         }
 
         .btn-descargar:hover {
-            background-color: #003a87;
+            background-color: var(--color-secundario);
         }
 
-        /* Para pantallas pequeñas (por ejemplo, teléfonos) */
-        @media (max-width: 767px) {
-            table {
-                font-size: 12px;
-            }
-
-            .btn-descargar {
-                padding: 6px 10px;
-                font-size: 12px;
-            }
+        .btn-editar {
+            background-color: var(--color-warning);
+            color: #212529;
         }
 
-        /* Para pantallas medianas (por ejemplo, tablets) */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            table {
-                font-size: 13px;
+        .btn-editar:hover {
+            background-color: var(--color-warning-hover);
+        }
+
+        .btn-eliminar {
+            background-color: var(--color-error);
+            color: white;
+        }
+
+        .btn-eliminar:hover {
+            background-color: var(--color-error-hover);
+        }
+
+        .acciones {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .mensaje-exito {
+            color: green;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .mensaje-error {
+            color: var(--color-error);
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+
+        /* Modal de edición */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-contenido {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .cerrar {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .cerrar:hover {
+            color: black;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Estilos para móviles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
             }
 
-            .btn-descargar {
-                padding: 7px 11px;
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            th, td {
+                padding: 8px 10px;
                 font-size: 14px;
             }
+
+            .btn {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .modal-contenido {
+                width: 95%;
+                margin: 10% auto;
+            }
         }
 
-        /* Para pantallas grandes (por ejemplo, computadoras de escritorio) */
-        @media (min-width: 1025px) {
-            body {
-                width: 800px; /* Fijo el tamaño para pantallas grandes */
+        @media (max-width: 480px) {
+            .acciones {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 5px;
+                margin-right: 0;
             }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Ver Cotizaciones</h1>
 
-<h1>Ver Cotizaciones</h1>
+        <div id="mensaje-exito" class="mensaje-exito"></div>
+        <div id="mensaje-error" class="mensaje-error"></div>
 
-<table>
-    <thead>
-        <tr>
-            <th>N° Cotización</th>
-            <th>Cliente</th>
-            <th>Fecha de Creación</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for cotizacion in cotizaciones %}
-        <tr>
-            <td>{{ cotizacion.numero_cotizacion }}</td>
-            <td>{{ cotizacion.nombre_cliente }}</td>
-            <td>{{ cotizacion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
-            <td>
-                <!-- Enlace para descargar el PDF -->
-                <a href="{{ url_for('descargar_pdf', cotizacion_id=cotizacion.id) }}" class="btn-descargar">
-                    Descargar PDF
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <table>
+            <thead>
+                <tr>
+                    <th>N° Cotización</th>
+                    <th>Cliente</th>
+                    <th>Fecha de Creación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cotizacion in cotizaciones %}
+                <tr data-id="{{ cotizacion.id }}">
+                    <td>{{ cotizacion.numero_cotizacion }}</td>
+                    <td>{{ cotizacion.nombre_cliente }}</td>
+                    <td>{{ cotizacion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+                    <td class="acciones">
+                        <button class="btn btn-descargar" onclick="descargarPDF('{{ cotizacion.id }}')">
+                            Descargar
+                        </button>
+                        <button class="btn btn-editar" onclick="mostrarModalEdicion('{{ cotizacion.id }}')">
+                            Editar
+                        </button>
+                        <button class="btn btn-eliminar" onclick="eliminarCotizacion('{{ cotizacion.id }}', this)">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
+    <div id="modalEdicion" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar" onclick="cerrarModal()">&times;</span>
+            <h2>Editar Cotización <span id="numero-cotizacion"></span></h2>
+            <form id="formEdicion">
+                <input type="hidden" id="cotizacion-id">
+
+                <div class="form-group">
+                    <label for="edit-nombre">Nombre del Cliente:</label>
+                    <input type="text" id="edit-nombre" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-documento">Tipo de Documento:</label>
+                    <select id="edit-documento" required>
+                        <option value="DNI">DNI</option>
+                        <option value="RUC">RUC</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-numero">Número de Documento:</label>
+                    <input type="text" id="edit-numero" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-direccion">Dirección:</label>
+                    <textarea id="edit-direccion" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-moneda">Moneda:</label>
+                    <select id="edit-moneda" required>
+                        <option value="SOLES">Soles</option>
+                        <option value="DOLARES">Dólares</option>
+                    </select>
+                </div>
+
+                <div id="productos-container">
+                    </div>
+
+                <button type="button" class="btn" onclick="agregarProductoEdicion()"
+                         style="background-color: var(--color-primario); color: white; margin-top: 10px;">
+                    + Agregar Producto
+                </button>
+
+                <div style="margin-top: 20px; text-align: right;">
+                    <button type="button" class="btn btn-editar" onclick="cerrarModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn"
+                            style="background-color: var(--color-primario); color: white;">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Función para mostrar mensajes
+        function mostrarMensaje(tipo, mensaje) {
+            const elemento = document.getElementById(`mensaje-${tipo}`);
+            elemento.textContent = mensaje;
+            elemento.style.display = 'block';
+
+            setTimeout(() => {
+                elemento.style.display = 'none';
+            }, 5000);
+        }
+
+        // Función para descargar PDF
+        function descargarPDF(cotizacionId) {
+            window.location.href = `/descargar_pdf/${cotizacionId}`;
+        }
+
+        // Función para eliminar cotización
+        async function eliminarCotizacion(cotizacionId, boton) {
+            if (!confirm('¿Estás seguro de eliminar esta cotización? Esta acción no se puede deshacer.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/eliminar_cotizacion/${cotizacionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Si la respuesta no es OK (ej: 500 Internal Server Error), data podría tener un error
+                    const errorMsg = data.error || 'Error desconocido al eliminar';
+                    throw new Error(`Error ${response.status}: ${errorMsg}`);
+                }
+
+
+                if (data.success) {
+                    boton.closest('tr').remove();
+                    mostrarMensaje('exito', 'Cotización eliminada correctamente');
+                } else {
+                     // Si la respuesta es OK pero success es false (ej: error de validación del backend)
+                    throw new Error(data.error || 'Error al procesar la solicitud en el servidor');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('error', error.message);
+            }
+        }
+
+        // Funciones para el modal de edición
+        let modalEdicion = document.getElementById("modalEdicion");
+
+        function cerrarModal() {
+            modalEdicion.style.display = "none";
+             // Opcional: limpiar los campos del modal al cerrar
+             document.getElementById("formEdicion").reset();
+             document.getElementById("productos-container").innerHTML = '<h3>Productos</h3>'; // Limpiar productos
+        }
+
+        // Cierra el modal al hacer clic fuera de él
+        window.onclick = function(event) {
+            if (event.target == modalEdicion) {
+                cerrarModal();
+            }
+        }
+
+        // Función para mostrar el modal de edición
+        async function mostrarModalEdicion(cotizacionId) {
+            try {
+                // Cargar los datos de la cotización
+                const response = await fetch(`/obtener_cotizacion/${cotizacionId}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                     // Si la respuesta no es OK (ej: 404 Not Found, 500 Internal Server Error)
+                    const errorMsg = data.error || 'Error desconocido al cargar';
+                    throw new Error(`Error ${response.status}: ${errorMsg}`);
+                }
+
+
+                // Llenar el formulario con los datos
+                document.getElementById("cotizacion-id").value = data.id;
+                document.getElementById("numero-cotizacion").textContent = data.numero_cotizacion;
+                document.getElementById("edit-nombre").value = data.nombre_cliente;
+                document.getElementById("edit-documento").value = data.tipo_documento;
+                document.getElementById("edit-numero").value = data.nro_documento;
+                // Usamos data.direccion y data.moneda que la ruta Flask ahora debería devolver correctamente
+                document.getElementById("edit-direccion").value = data.direccion || '';
+                document.getElementById("edit-moneda").value = data.moneda || 'SOLES';
+
+                // Cargar productos
+                const productosContainer = document.getElementById("productos-container");
+                productosContainer.innerHTML = '<h3>Productos</h3>'; // Limpiar productos anteriores
+
+                if (data.productos && Array.isArray(data.productos) && data.productos.length > 0) {
+                    data.productos.forEach((producto, index) => {
+                        agregarProductoEdicion(producto, index);
+                    });
+                } else {
+                    // Si no hay productos o la lista está vacía, agregar un campo vacío por defecto
+                    agregarProductoEdicion();
+                }
+
+                // Mostrar el modal
+                modalEdicion.style.display = "block";
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('error', error.message);
+            }
+        }
+
+        // Función para agregar campos de producto en el modal
+        function agregarProductoEdicion(producto = null, index = null) {
+            const productosContainer = document.getElementById("productos-container");
+
+            const productoDiv = document.createElement("div");
+            productoDiv.className = "producto-edicion";
+            productoDiv.style.marginBottom = "15px";
+            productoDiv.style.padding = "10px";
+            productoDiv.style.border = "1px solid #ddd";
+            productoDiv.style.borderRadius = "4px";
+
+            // Usar el ID del producto existente o generar uno temporal (para nuevos productos en la edición)
+            const productoId = producto && producto.id ? producto.id : `new-${Date.now()}`;
+
+            productoDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <h4>Producto ${index !== null ? index + 1 : ''}</h4>
+                    <button type="button" onclick="eliminarProductoEdicion(this)"
+                            style="background: var(--color-error); color: white; border: none;
+                                     padding: 2px 6px; border-radius: 3px; cursor: pointer;">
+                        Eliminar
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <input type="text" name="edit-descripcion[]" value="${producto ? producto.descripcion : ''}" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Unidades:</label>
+                        <input type="number" name="edit-unidades[]" min="1" value="${producto ? producto.unidades : '1'}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Total:</label>
+                        <input type="number" name="edit-total[]" step="0.01" min="0" value="${producto ? producto.total : '0'}" required>
+                    </div>
+                </div>
+                <input type="hidden" name="edit-producto-id[]" value="${productoId}">
+            `;
+
+            productosContainer.appendChild(productoDiv);
+        }
+
+        // Función para eliminar un producto en el modal
+        function eliminarProductoEdicion(boton) {
+            // No es necesario confirmar si solo hay un producto y lo estás eliminando
+            const productosDivs = document.querySelectorAll('.producto-edicion');
+             if (productosDivs.length > 1) {
+                if (confirm('¿Eliminar este producto?')) {
+                    boton.closest('.producto-edicion').remove();
+                }
+            } else {
+                 alert('Debe haber al menos un producto en la cotización.');
+            }
+        }
+
+
+        // Manejar el envío del formulario de edición
+        document.getElementById("formEdicion").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const cotizacionId = document.getElementById("cotizacion-id").value;
+            const formData = {
+                nombre_cliente: document.getElementById("edit-nombre").value.trim(), // Añadir trim()
+                tipo_documento: document.getElementById("edit-documento").value,
+                nro_documento: document.getElementById("edit-numero").value.trim(), // Añadir trim()
+                direccion: document.getElementById("edit-direccion").value.trim(), // Añadir trim()
+                moneda: document.getElementById("edit-moneda").value,
+                productos: []
+            };
+
+            // Recoger datos de productos
+            const productosDivs = document.querySelectorAll('.producto-edicion');
+            if (productosDivs.length === 0) {
+                 mostrarMensaje('error', 'Debe agregar al menos un producto.');
+                 return; // Detener el envío si no hay productos
+            }
+
+            productosDivs.forEach(div => {
+                 const descripcionInput = div.querySelector('input[name="edit-descripcion[]"]');
+                 const unidadesInput = div.querySelector('input[name="edit-unidades[]"]');
+                 const totalInput = div.querySelector('input[name="edit-total[]"]');
+
+                 // Validar campos individuales antes de añadir
+                 const descripcion = descripcionInput.value.trim(); // Añadir trim()
+                 const unidades = parseInt(unidadesInput.value);
+                 const total = parseFloat(totalInput.value);
+
+
+                 if (descripcion && !isNaN(unidades) && unidades > 0 && !isNaN(total) && total >= 0) {
+                    formData.productos.push({
+                        // El ID no es estrictamente necesario para la actualización en el backend
+                        // ya que se eliminan y recrean, pero lo mantenemos por si cambia la lógica.
+                        // id: div.querySelector('input[name="edit-producto-id[]"]').value,
+                        descripcion: descripcion,
+                        unidades: unidades,
+                        total: total
+                    });
+                 } else {
+                     // Opcional: Mostrar error si algún campo de producto está inválido
+                     mostrarMensaje('error', 'Por favor, complete todos los campos de los productos correctamente.');
+                     // No detener el envío aquí, el backend validará, pero es mejor validar en frontend
+                     // Para una validación estricta en frontend, podrías detener el proceso aquí:
+                     // e.preventDefault(); return;
+                 }
+            });
+
+             // Opcional: Validar si se agregaron productos válidos a formData.productos
+             if (formData.productos.length === 0) {
+                  mostrarMensaje('error', 'No se pudieron validar los datos de los productos. Revise los campos.');
+                  return; // Detener el envío si no hay productos válidos
+             }
+
+
+            try {
+                 // Deshabilitar botón y mostrar spinner si tienes uno
+                 const submitBtn = this.querySelector('button[type="submit"]');
+                 // submitBtn.disabled = true; // Descomentar si quieres deshabilitar el botón
+                 // showSpinner(); // Función para mostrar un spinner
+
+                const response = await fetch(`/actualizar_cotizacion/${cotizacionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                     // Si la respuesta no es OK (ej: 400 Bad Request, 500 Internal Server Error)
+                    const errorMsg = data.error || 'Error desconocido al actualizar';
+                     throw new Error(`Error ${response.status}: ${errorMsg}`);
+                }
+
+
+                if (data.success) {
+                    mostrarMensaje('exito', data.message || 'Cotización actualizada correctamente'); // Usar el mensaje del backend si existe
+                    cerrarModal();
+                    // Recargar la página para ver los cambios en la tabla
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    // Si la respuesta es OK pero success es false (ej: error de validación del backend)
+                    throw new Error(data.error || 'Error al procesar la solicitud en el servidor');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('error', error.message);
+            } finally {
+                 // Volver a habilitar botón y ocultar spinner
+                 // submitBtn.disabled = false; // Descomentar si deshabilitaste el botón
+                 // hideSpinner(); // Función para ocultar spinner
+            }
+        });
+    </script>
 </body>
 </html>
