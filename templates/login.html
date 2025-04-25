@@ -2,81 +2,168 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
     <style>
+        /* Desde Uiverse.io by alexruix - Adaptado y mejorado para responsividad */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-            /* Añadir esto para evitar un padding excesivo en pantallas pequeñas */
-            box-sizing: border-box; 
+            /* Fondo oscuro para toda la página */
+            background-color: #1a1b25; /* Un tono oscuro diferente al del card */
+            color: #f5f5f5; /* Color de texto claro para el body */
+            display: flex; /* Usar flexbox para centrar */
+            justify-content: center; /* Centrar horizontalmente */
+            align-items: center; /* Centrar verticalmente */
+            min-height: 100vh; /* Altura mínima del viewport */
+            margin: 0; /* Eliminar margen por defecto */
+            padding: 20px; /* Añadir un poco de padding general */
+            box-sizing: border-box; /* Incluir padding y borde en el tamaño total */
         }
-        .login-container {
-            background-color: #fff;
-            padding: 30px;
-            max-width: 400px;
-            margin: 0 auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            /* Añadir esto para que en pantallas muy pequeñas el padding no cause scroll horizontal */
-            box-sizing: border-box; 
-            width: 90%; /* Ajuste para que no sea un ancho fijo de 400px, sino un porcentaje */
-            max-width: 400px; /* Mantenemos el max-width para pantallas grandes */
-        }
-        h2 {
+
+        .card {
+            /* width: 190px; /* Eliminamos o ajustamos este ancho fijo */
+            padding: 1.9rem 1.2rem;
             text-align: center;
-            color: #004aad;
-            margin-bottom: 20px; /* Añadido para separar del formulario */
+            background: #2a2b38; /* Fondo oscuro del card */
+            border-radius: 8px; /* Añadido un border-radius para suavizar esquinas */
+            box-shadow: 0 8px 24px 0 rgb(0 0 0 / 30%); /* Ajustada sombra para fondo oscuro */
+            max-width: 400px; /* Máximo ancho del card */
+            width: 90%; /* El card ocupará el 90% del ancho disponible en pantallas pequeñas */
+            box-sizing: border-box; /* Asegura que padding no afecte el ancho */
         }
-        label {
-            font-weight: bold;
-            display: block; /* Hace que la etiqueta ocupe su propia línea */
-            margin-bottom: 5px; /* Espacio entre label e input */
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
+
+        /*Inputs*/
+        .field {
+            margin-top: .5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5em;
+            background-color: #1f2029;
             border-radius: 4px;
-            box-sizing: border-box; /* Asegura que el padding no aumente el ancho total */
+            padding: .5em 1em;
+            margin-bottom: 15px; /* Espacio entre campos */
         }
-        button {
+
+        .input-icon {
+            height: 1em;
+            width: 1em;
+            fill: #ffeba7;
+            flex-shrink: 0; /* Evita que el ícono se encoja */
+        }
+
+        .input-field {
+            background: none;
+            border: none;
+            outline: none;
             width: 100%;
-            padding: 10px;
-            background-color: #004aad;
-            color: white;
+            color: #d3d3d3; /* Color de texto para los inputs */
+            font-size: 1em; /* Asegura un tamaño de fuente legible */
+            line-height: 1.5; /* Espacio entre líneas */
+        }
+
+        /* Placeholder color */
+        .input-field::placeholder {
+            color: #a0a0a0; /* Color más claro para el placeholder */
+            opacity: 1; /* Asegura que el placeholder sea visible */
+        }
+
+        /*Text*/
+        .title {
+            margin-bottom: 1.5rem; /* Más espacio después del título */
+            font-size: 1.5em;
+            font-weight: 500;
+            color: #f5f5f5; /* Color del título */
+            text-align: center; /* Centrar el título */
+        }
+
+        /*Buttons*/
+        .btn {
+            margin: 1rem auto; /* Centrar el botón */
+            display: block; /* Hace que el botón ocupe su propia línea */
             border: none;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px; /* Ajuste de tamaño de fuente */
+            font-weight: bold;
+            font-size: .8em;
+            text-transform: uppercase;
+            padding: 0.6em 1.2em;
+            background-color: #ffeba7;
+            color: #5e6681;
+            box-shadow: 0 8px 24px 0 rgb(255 235 167 / 20%);
+            transition: all .3s ease-in-out;
+            width: 100%; /* Hace que el botón ocupe todo el ancho */
+            cursor: pointer; /* Indica que es interactivo */
         }
-        button:hover {
-            background-color: #003a87;
+
+        .btn-link {
+            color: #f5f5f5; /* Color del enlace */
+            display: block;
+            font-size: .75em;
+            transition: color .3s ease-out;
+            text-decoration: none; /* Quitar subrayado por defecto */
+            margin-top: 1rem; /* Espacio encima del enlace */
         }
-         /* Opcional: Añadir media query básica si necesitas ajustes específicos para móviles */
-        @media (max-width: 600px) {
-            body {
-                padding: 10px; /* Menos padding en pantallas pequeñas */
+
+        /*Hover & focus*/
+        .field input:focus::placeholder {
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .btn:hover {
+            background-color: #5e6681;
+            color: #ffeba7;
+            box-shadow: 0 8px 24px 0 rgb(16 39 112 / 20%);
+        }
+
+        .btn-link:hover {
+            color: #ffeba7;
+        }
+
+        /* Media Query básica para móviles */
+        @media (max-width: 480px) {
+            .card {
+                padding: 1.5rem 1rem; /* Reducir padding en pantallas muy pequeñas */
             }
-            .login-container {
-                padding: 20px; /* Menos padding dentro del contenedor */
+
+            .title {
+                font-size: 1.3em; /* Ajustar tamaño del título */
+            }
+
+            .btn {
+                font-size: .7em; /* Ajustar tamaño del botón */
+                padding: 0.8em 1em;
+            }
+
+            .btn-link {
+                 font-size: .7em; /* Ajustar tamaño del enlace */
             }
         }
     </style>
 </head>
 <body>
 
-<div class="login-container">
-    <h2>Login</h2>
+<div class="card">
+    <h4 class="title">Iniciar sesión</h4>
     <form action="/login" method="POST">
-        <label for="username">Usuario</label>
-        <input type="text" id="username" name="username" required placeholder="Ingrese su usuario">
-        
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña">
-        
-        <button type="submit">Iniciar sesión</button>
+        <div class="field">
+            <svg class="input-icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                <path d="M207.8 20.73c-93.45 18.32-168.7 93.66-187 187.1c-27.64 140.9 68.65 266.2 199.1 285.1c19.01 2.888 36.17-12.26 36.17-31.49l.0001-.6631c0-15.74-11.44-28.88-26.84-31.24c-84.35-12.98-149.2-86.13-149.2-174.2c0-102.9 88.61-185.5 193.4-175.4c91.54 8.869 158.6 91.25 158.6 183.2l0 16.16c0 22.09-17.94 40.05-40 40.05s-40.01-17.96-40.01-40.05v-120.1c0-8.847-7.161-16.02-16.01-16.02l-31.98 .0036c-7.299 0-13.2 4.992-15.12 11.68c-24.85-12.15-54.24-16.38-86.06-5.106c-38.75 13.73-68.12 48.91-73.72 89.64c-9.483 69.01 43.81 128 110.9 128c26.44 0 50.43-9.544 69.59-24.88c24 31.3 65.23 48.69 109.4 37.49C465.2 369.3 496 324.1 495.1 277.2V256.3C495.1 107.1 361.2-9.332 207.8 20.73zM239.1 304.3c-26.47 0-48-21.56-48-48.05s21.53-48.05 48-48.05s48 21.56 48 48.05S266.5 304.3 239.1 304.3z"></path>
+            </svg>
+            <input type="text" id="username" name="username" required placeholder="Ingrese su usuario" class="input-field">
+        </div>
+
+        <div class="field">
+             <svg class="input-icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                <path d="M80 192V144C80 64.47 144.5 0 224 0C303.5 0 368 64.47 368 144V192H384C419.3 192 448 220.7 448 256V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V256C0 220.7 28.65 192 64 192H80zM144 192H304V144C304 99.82 268.2 64 224 64C179.8 64 144 99.82 144 144V192z"></path>
+            </svg>
+            <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña" class="input-field">
+        </div>
+
+        <button type="submit" class="btn">Iniciar sesión</button>
+
+        <a href="#" class="btn-link">¿Olvidaste tu contraseña?</a>
+
     </form>
 </div>
 
