@@ -62,8 +62,8 @@
         td {
             padding: 8px;
             border: 1px solid #ddd;
-            word-wrap: break-word;  /* Ajusta el texto largo en las celdas */
-            white-space: normal;    /* Permite que el texto se ajuste en varias líneas */
+            word-wrap: break-word;
+            white-space: normal;
         }
 
         input[type="submit"] {
@@ -79,10 +79,49 @@
             width: auto;
         }
 
-        .loader {
+        /* Estilos para el modal de carga */
+        .modal-carga {
             display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-carga-contenido {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
             text-align: center;
-            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 300px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 74, 173, 0.3);
+            border-radius: 50%;
+            border-top-color: #004aad;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 20px;
+        }
+
+        .spinner-message {
+            font-size: 18px;
+            color: #004aad;
+            font-weight: bold;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 767px) {
@@ -199,6 +238,28 @@
             return true;
         }
 
+        function mostrarSpinner(mostrar, mensaje = 'Generando...') {
+            const modalCarga = document.getElementById('modalCarga');
+            const spinnerMsg = document.getElementById('spinner-message');
+            
+            if (mostrar) {
+                spinnerMsg.textContent = mensaje;
+                modalCarga.style.display = 'block';
+            } else {
+                modalCarga.style.display = 'none';
+            }
+        }
+
+        function limpiarSesion() {
+            return fetch('/limpiar_sesion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('cotizacionForm').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -208,11 +269,10 @@
                 }
                 
                 const formData = new FormData(this);
-                
                 const submitBtn = this.querySelector('[type="submit"]');
                 submitBtn.disabled = true;
                 submitBtn.value = 'Generando...';
-                document.getElementById('loader').style.display = 'block';
+                mostrarSpinner(true, "Generando...");
                 
                 fetch('/generar_pdf', {
                     method: 'POST',
@@ -235,16 +295,25 @@
                     a.click();
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
-                    alert('Cotización generada correctamente');
+                    
+                    mostrarSpinner(true, "¡Listo!");
+                    setTimeout(() => {
+                        mostrarSpinner(false);
+                    }, 1000);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error: ' + error.message);
+                    mostrarSpinner(true, "Reintentando...");
+                    setTimeout(() => {
+                        limpiarSesion().then(() => {
+                            mostrarSpinner(false);
+                            document.getElementById('cotizacionForm').submit();
+                        });
+                    }, 2000);
                 })
                 .finally(() => {
                     submitBtn.disabled = false;
                     submitBtn.value = 'Generar Cotización';
-                    document.getElementById('loader').style.display = 'none';
                 });
             });
         });
@@ -252,7 +321,7 @@
 </head>
 <body>
     <h1>Generador de Cotizaciones</h1>
-    <form id="cotizacionForm" onsubmit="return validarFormulario()">
+    <form id="cotizacionForm">
         <div>
             <label for="documento">DOCUMENTO:</label>
             <select id="documento" name="documento" required>
@@ -307,11 +376,17 @@
 
         <button type="button" onclick="agregarProducto()">Agregar Producto</button>
 
-        <div id="loader" class="loader">Generando PDF...</div>
-
         <input type="submit" value="Generar Cotización">
     </form>
 
     <button onclick="window.location.href='/ver_cotizaciones';">Ver Cotizaciones</button>
+
+    <!-- Modal de carga -->
+    <div id="modalCarga" class="modal-carga">
+        <div class="modal-carga-contenido">
+            <div class="spinner"></div>
+            <div id="spinner-message" class="spinner-message"></div>
+        </div>
+    </div>
 </body>
 </html>

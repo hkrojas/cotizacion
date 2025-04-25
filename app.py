@@ -447,6 +447,12 @@ def obtener_siguiente_numero_cotizacion():
         app.logger.error(f"Error al obtener número de cotización: {str(e)}")
         return "0001"
 
+@app.route('/index')
+def index():
+    # Aquí puedes añadir lógica si necesitas pasar datos a index.html
+    # Por ahora, simplemente renderizamos la plantilla
+    return render_template('index.html')
+
 @app.route('/generar_pdf', methods=['POST'])
 def generar_pdf():
     try:

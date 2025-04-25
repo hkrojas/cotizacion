@@ -38,6 +38,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
             overflow-x: auto;
+            position: relative;
         }
 
         h1 {
@@ -45,6 +46,25 @@
             text-align: center;
             margin-bottom: 20px;
             font-size: 24px;
+            margin-top: 30px;
+        }
+
+        .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: var(--color-primario);
+            text-decoration: none;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-arrow:hover {
+            color: var(--color-secundario);
         }
 
         table {
@@ -132,7 +152,6 @@
             display: none;
         }
 
-        /* Modal de edición */
         .modal {
             display: none;
             position: fixed;
@@ -190,7 +209,50 @@
             resize: vertical;
         }
 
-        /* Estilos para móviles */
+        .modal-carga {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-carga-contenido {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 300px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 74, 173, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--color-primario);
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 20px;
+        }
+
+        .spinner-message {
+            font-size: 18px;
+            color: var(--color-primario);
+            font-weight: bold;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -236,6 +298,8 @@
 </head>
 <body>
     <div class="container">
+        <a href="/index" class="back-arrow">&larr; Volver</a>
+
         <h1>Ver Cotizaciones</h1>
 
         <div id="mensaje-exito" class="mensaje-exito"></div>
@@ -312,7 +376,8 @@
                 </div>
 
                 <div id="productos-container">
-                    </div>
+                    <h3>Productos</h3>
+                </div>
 
                 <button type="button" class="btn" onclick="agregarProductoEdicion()"
                          style="background-color: var(--color-primario); color: white; margin-top: 10px;">
@@ -332,8 +397,14 @@
         </div>
     </div>
 
+    <div id="modalCarga" class="modal-carga">
+        <div class="modal-carga-contenido">
+            <div class="spinner"></div>
+            <div id="spinner-message" class="spinner-message">Guardando cambios...</div>
+        </div>
+    </div>
+
     <script>
-        // Función para mostrar mensajes
         function mostrarMensaje(tipo, mensaje) {
             const elemento = document.getElementById(`mensaje-${tipo}`);
             elemento.textContent = mensaje;
@@ -344,12 +415,22 @@
             }, 5000);
         }
 
-        // Función para descargar PDF
+        function mostrarSpinner(mostrar, mensaje = 'Guardando cambios...') {
+            const modalCarga = document.getElementById('modalCarga');
+            const spinnerMsg = document.getElementById('spinner-message');
+            
+            if (mostrar) {
+                spinnerMsg.textContent = mensaje;
+                modalCarga.style.display = 'block';
+            } else {
+                modalCarga.style.display = 'none';
+            }
+        }
+
         function descargarPDF(cotizacionId) {
             window.location.href = `/descargar_pdf/${cotizacionId}`;
         }
 
-        // Función para eliminar cotización
         async function eliminarCotizacion(cotizacionId, boton) {
             if (!confirm('¿Estás seguro de eliminar esta cotización? Esta acción no se puede deshacer.')) {
                 return;
@@ -367,17 +448,14 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    // Si la respuesta no es OK (ej: 500 Internal Server Error), data podría tener un error
                     const errorMsg = data.error || 'Error desconocido al eliminar';
                     throw new Error(`Error ${response.status}: ${errorMsg}`);
                 }
-
 
                 if (data.success) {
                     boton.closest('tr').remove();
                     mostrarMensaje('exito', 'Cotización eliminada correctamente');
                 } else {
-                     // Si la respuesta es OK pero success es false (ej: error de validación del backend)
                     throw new Error(data.error || 'Error al procesar la solicitud en el servidor');
                 }
             } catch (error) {
@@ -386,61 +464,49 @@
             }
         }
 
-        // Funciones para el modal de edición
         let modalEdicion = document.getElementById("modalEdicion");
 
         function cerrarModal() {
             modalEdicion.style.display = "none";
-             // Opcional: limpiar los campos del modal al cerrar
-             document.getElementById("formEdicion").reset();
-             document.getElementById("productos-container").innerHTML = '<h3>Productos</h3>'; // Limpiar productos
+            document.getElementById("formEdicion").reset();
+            document.getElementById("productos-container").innerHTML = '<h3>Productos</h3>';
         }
 
-        // Cierra el modal al hacer clic fuera de él
         window.onclick = function(event) {
             if (event.target == modalEdicion) {
                 cerrarModal();
             }
         }
 
-        // Función para mostrar el modal de edición
         async function mostrarModalEdicion(cotizacionId) {
             try {
-                // Cargar los datos de la cotización
                 const response = await fetch(`/obtener_cotizacion/${cotizacionId}`);
                 const data = await response.json();
 
                 if (!response.ok) {
-                     // Si la respuesta no es OK (ej: 404 Not Found, 500 Internal Server Error)
                     const errorMsg = data.error || 'Error desconocido al cargar';
                     throw new Error(`Error ${response.status}: ${errorMsg}`);
                 }
 
-
-                // Llenar el formulario con los datos
                 document.getElementById("cotizacion-id").value = data.id;
                 document.getElementById("numero-cotizacion").textContent = data.numero_cotizacion;
                 document.getElementById("edit-nombre").value = data.nombre_cliente;
                 document.getElementById("edit-documento").value = data.tipo_documento;
                 document.getElementById("edit-numero").value = data.nro_documento;
-                // Usamos data.direccion y data.moneda que la ruta Flask ahora debería devolver correctamente
                 document.getElementById("edit-direccion").value = data.direccion || '';
                 document.getElementById("edit-moneda").value = data.moneda || 'SOLES';
 
-                // Cargar productos
                 const productosContainer = document.getElementById("productos-container");
-                productosContainer.innerHTML = '<h3>Productos</h3>'; // Limpiar productos anteriores
+                productosContainer.innerHTML = '<h3>Productos</h3>';
 
                 if (data.productos && Array.isArray(data.productos) && data.productos.length > 0) {
                     data.productos.forEach((producto, index) => {
                         agregarProductoEdicion(producto, index);
                     });
                 } else {
-                    // Si no hay productos o la lista está vacía, agregar un campo vacío por defecto
                     agregarProductoEdicion();
                 }
 
-                // Mostrar el modal
                 modalEdicion.style.display = "block";
 
             } catch (error) {
@@ -449,7 +515,6 @@
             }
         }
 
-        // Función para agregar campos de producto en el modal
         function agregarProductoEdicion(producto = null, index = null) {
             const productosContainer = document.getElementById("productos-container");
 
@@ -460,7 +525,6 @@
             productoDiv.style.border = "1px solid #ddd";
             productoDiv.style.borderRadius = "4px";
 
-            // Usar el ID del producto existente o generar uno temporal (para nuevos productos en la edición)
             const productoId = producto && producto.id ? producto.id : `new-${Date.now()}`;
 
             productoDiv.innerHTML = `
@@ -492,9 +556,7 @@
             productosContainer.appendChild(productoDiv);
         }
 
-        // Función para eliminar un producto en el modal
         function eliminarProductoEdicion(boton) {
-            // No es necesario confirmar si solo hay un producto y lo estás eliminando
             const productosDivs = document.querySelectorAll('.producto-edicion');
              if (productosDivs.length > 1) {
                 if (confirm('¿Eliminar este producto?')) {
@@ -505,26 +567,26 @@
             }
         }
 
-
-        // Manejar el envío del formulario de edición
         document.getElementById("formEdicion").addEventListener("submit", async function(e) {
             e.preventDefault();
 
+            mostrarSpinner(true, "Guardando cambios...");
+
             const cotizacionId = document.getElementById("cotizacion-id").value;
             const formData = {
-                nombre_cliente: document.getElementById("edit-nombre").value.trim(), // Añadir trim()
+                nombre_cliente: document.getElementById("edit-nombre").value.trim(),
                 tipo_documento: document.getElementById("edit-documento").value,
-                nro_documento: document.getElementById("edit-numero").value.trim(), // Añadir trim()
-                direccion: document.getElementById("edit-direccion").value.trim(), // Añadir trim()
+                nro_documento: document.getElementById("edit-numero").value.trim(),
+                direccion: document.getElementById("edit-direccion").value.trim(),
                 moneda: document.getElementById("edit-moneda").value,
                 productos: []
             };
 
-            // Recoger datos de productos
             const productosDivs = document.querySelectorAll('.producto-edicion');
             if (productosDivs.length === 0) {
                  mostrarMensaje('error', 'Debe agregar al menos un producto.');
-                 return; // Detener el envío si no hay productos
+                 mostrarSpinner(false);
+                 return;
             }
 
             productosDivs.forEach(div => {
@@ -532,43 +594,28 @@
                  const unidadesInput = div.querySelector('input[name="edit-unidades[]"]');
                  const totalInput = div.querySelector('input[name="edit-total[]"]');
 
-                 // Validar campos individuales antes de añadir
-                 const descripcion = descripcionInput.value.trim(); // Añadir trim()
+                 const descripcion = descripcionInput.value.trim();
                  const unidades = parseInt(unidadesInput.value);
                  const total = parseFloat(totalInput.value);
 
-
                  if (descripcion && !isNaN(unidades) && unidades > 0 && !isNaN(total) && total >= 0) {
                     formData.productos.push({
-                        // El ID no es estrictamente necesario para la actualización en el backend
-                        // ya que se eliminan y recrean, pero lo mantenemos por si cambia la lógica.
-                        // id: div.querySelector('input[name="edit-producto-id[]"]').value,
                         descripcion: descripcion,
                         unidades: unidades,
                         total: total
                     });
                  } else {
-                     // Opcional: Mostrar error si algún campo de producto está inválido
                      mostrarMensaje('error', 'Por favor, complete todos los campos de los productos correctamente.');
-                     // No detener el envío aquí, el backend validará, pero es mejor validar en frontend
-                     // Para una validación estricta en frontend, podrías detener el proceso aquí:
-                     // e.preventDefault(); return;
                  }
             });
 
-             // Opcional: Validar si se agregaron productos válidos a formData.productos
              if (formData.productos.length === 0) {
                   mostrarMensaje('error', 'No se pudieron validar los datos de los productos. Revise los campos.');
-                  return; // Detener el envío si no hay productos válidos
+                  mostrarSpinner(false);
+                  return;
              }
 
-
             try {
-                 // Deshabilitar botón y mostrar spinner si tienes uno
-                 const submitBtn = this.querySelector('button[type="submit"]');
-                 // submitBtn.disabled = true; // Descomentar si quieres deshabilitar el botón
-                 // showSpinner(); // Función para mostrar un spinner
-
                 const response = await fetch(`/actualizar_cotizacion/${cotizacionId}`, {
                     method: 'POST',
                     headers: {
@@ -581,28 +628,24 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                     // Si la respuesta no es OK (ej: 400 Bad Request, 500 Internal Server Error)
                     const errorMsg = data.error || 'Error desconocido al actualizar';
-                     throw new Error(`Error ${response.status}: ${errorMsg}`);
+                    throw new Error(`Error ${response.status}: ${errorMsg}`);
                 }
 
-
                 if (data.success) {
-                    mostrarMensaje('exito', data.message || 'Cotización actualizada correctamente'); // Usar el mensaje del backend si existe
-                    cerrarModal();
-                    // Recargar la página para ver los cambios en la tabla
-                    setTimeout(() => location.reload(), 1000);
+                    mostrarSpinner(true, "¡Listo!");
+                    setTimeout(() => {
+                        mostrarSpinner(false);
+                        cerrarModal();
+                        location.reload();
+                    }, 2000);
                 } else {
-                    // Si la respuesta es OK pero success es false (ej: error de validación del backend)
                     throw new Error(data.error || 'Error al procesar la solicitud en el servidor');
                 }
             } catch (error) {
                 console.error('Error:', error);
                 mostrarMensaje('error', error.message);
-            } finally {
-                 // Volver a habilitar botón y ocultar spinner
-                 // submitBtn.disabled = false; // Descomentar si deshabilitaste el botón
-                 // hideSpinner(); // Función para ocultar spinner
+                mostrarSpinner(false);
             }
         });
     </script>
