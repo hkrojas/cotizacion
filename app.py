@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, jsonify, send_file, redirect,
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer, Paragraph
 from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet # Importamos los estilos básicos para Paragraph
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import sys
@@ -21,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__, template_folder='templates')
 load_dotenv()
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL") # Corregido de 'DATABASE_URL' a "DATABASE_URL"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -76,6 +77,8 @@ os.makedirs(PDF_DIR, exist_ok=True)
 
 COLOR_PRINCIPAL = colors.HexColor('#004aad')
 
+# La función dividir_texto ya no se llama directamente en generate_pdf_content
+# pero la mantenemos por si la usas en otro lugar o por si la quieres adaptar
 def dividir_texto(texto, max_palabras=7):
     """
     Divide un texto en fragmentos, asegurando que cada fragmento no supere el número máximo de palabras.
@@ -111,6 +114,10 @@ def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
     margen_izq = 20
     margen_der = 20
     ancho_total = letter[0] - margen_izq - margen_der
+
+    # Ajusta el ancho total para las columnas de la tabla de productos
+    # El ancho de la columna de descripción es ancho_total * 0.45
+    ancho_columna_descripcion = ancho_total * 0.45
 
     doc = SimpleDocTemplate(
         buffer,
@@ -196,22 +203,31 @@ def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
     elementos.append(Spacer(1, 20))
 
     # --- Products Table ---
+    # Define el estilo base del Paragraph para la descripción
+    styles = getSampleStyleSheet()
+    styleN = styles['Normal']
+    styleN.leading = 12 # Espacio entre líneas, ajusta si es necesario
+    styleN.fontName = 'Helvetica' # Asegura la fuente
+    styleN.fontSize = 10 # Asegura el tamaño de fuente
+    styleN.textColor = colors.black # Asegura el color del texto para los datos de la descripción
+
     data_productos = [["Descripción", "Cantidad", "P.Unit", "IGV", "Precio"]]
 
     # products_list will be the list of Producto objects passed to this function
     for producto in productos_list:
-        fragmentos_descripcion = dividir_texto(producto.descripcion) # Use producto object attributes
-        descripcion_completa = '\n'.join(fragmentos_descripcion)
+        # Usamos Paragraph para la descripción
+        descripcion_texto = producto.descripcion.strip()
+
         unidad = producto.unidades
         total = producto.total
-        # Recalcular precio unitario para el PDF si es necesario, o usar el guardado
-        # Usaremos el guardado en el objeto producto si existe, si no, calculamos
         precio_unit = producto.precio_unitario if producto.precio_unitario is not None else (total / unidad if unidad > 0 else 0.0)
+        igv_producto = total * 0.18
 
-        igv_producto = total * 0.18 # Calculate IGV per product for display
+        # Crea un objeto Paragraph para la descripción
+        descripcion_paragraph = Paragraph(descripcion_texto, styleN)
 
         data_productos.append([
-            descripcion_completa,
+            descripcion_paragraph, # Usamos el objeto Paragraph aquí
             f"{unidad}",
             f"{simbolo} {precio_unit:.2f}",
             f"{simbolo} {igv_producto:.2f}",
@@ -219,27 +235,43 @@ def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
         ])
 
     tabla_productos = Table(data_productos, colWidths=[
-        ancho_total * 0.45,
+        ancho_columna_descripcion,
         ancho_total * 0.10,
         ancho_total * 0.15,
         ancho_total * 0.15,
         ancho_total * 0.15
     ])
     tabla_productos.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        # Alineación general para todas las celdas (puede ser CENTER o LEFT)
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'), # Generalmente centramos todo primero
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), # Generalmente alineamos al medio
+
+        # Estilos específicos para la FILA DE ENCABEZADO (fila 0)
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'), # --> CENTRAMOS la fila de encabezado horizontalmente <--
+        ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'), # Alineación vertical para el encabezado
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), # Fuente en negrita para el encabezado
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
         ('BACKGROUND', (0, 0), (-1, 0), COLOR_PRINCIPAL),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('LINEBELOW', (0, -1), (-1, -1), 1.5, COLOR_PRINCIPAL),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white), # Color del texto en el encabezado
+
+        # Estilos específicos para las FILAS DE DATOS (desde la fila 1 hacia abajo)
+        # Alineación para la PRIMERA columna (Descripción) en las filas de datos
+        ('ALIGN', (0, 1), (0, -1), 'LEFT'), # Alineamos a la IZQUIERDA la descripción en las filas de datos
+        ('VALIGN', (0, 1), (0, -1), 'TOP'), # Alineamos arriba la descripción (para que el texto envuelto empiece arriba)
+        ('TEXTCOLOR', (0, 1), (0, -1), colors.black), # Color del texto en la columna de descripción
+
+        # Alineación para las OTRAS columnas de datos (Cantidad, P.Unit, IGV, Precio)
+        ('ALIGN', (1, 1), (-1, -1), 'CENTER'), # Centramos horizontalmente el resto de columnas de datos
+        ('VALIGN', (1, 1), (-1, -1), 'MIDDLE'), # Alineamos al medio verticalmente el resto de columnas de datos
+
+        # Otros estilos generales que aplican a rangos específicos o a toda la tabla
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'), # Fuente para las filas de datos (excepto encabezado)
+        ('FONTSIZE', (0, 1), (-1, -1), 10), # Tamaño de fuente para las filas de datos
+        ('LINEBELOW', (0, -1), (-1, -1), 1.5, COLOR_PRINCIPAL), # Línea azul debajo de la última fila de datos
         ('LEFTPADDING', (0, 0), (-1, -1), 3),
         ('RIGHTPADDING', (0, 0), (-1, -1), 3),
         ('TOPPADDING', (0, 0), (-1, -1), 5),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('WORDWRAP', (0, 0), (-1, -1), True),
-        ('SPLITBY', (0, 0), (-1, -1), True),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP')
     ]))
     elementos.append(tabla_productos)
 
@@ -258,7 +290,7 @@ def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
     tabla_total.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'), # Alineamos a la derecha el texto "Total Gravado", "Total IGV", "Importe Total"
         ('VALIGN', (0, 0), (0, -1), 'MIDDLE'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
@@ -286,6 +318,7 @@ def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
     ]))
     elementos.append(tabla_monto)
+
 
     # --- Bank Info ---
     data_banco = [
@@ -685,7 +718,7 @@ if __name__ == '__main__':
             # db.create_all()
             print("Verificando/inicializando la base de datos...")
             # Puedes añadir lógica aquí para verificar si las tablas existen
-            # Si usas migraciones, confía en que 'flask db upgrade' lo hizo.
+            # Si usas migraciones, confías en que 'flask db upgrade' lo hizo.
 
         except Exception as e:
             app.logger.error(f"Error al inicializar la base de datos en el startup: {str(e)}")
