@@ -221,7 +221,7 @@ def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
         unidad = producto.unidades
         total = producto.total
         precio_unit = producto.precio_unitario if producto.precio_unitario is not None else (total / unidad if unidad > 0 else 0.0)
-        igv_producto = total * 0.18
+        igv_producto = total * (0.18/1.18)
 
         # Crea un objeto Paragraph para la descripción
         descripcion_paragraph = Paragraph(descripcion_texto, styleN)
@@ -276,7 +276,7 @@ def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
     elementos.append(tabla_productos)
 
     # --- Totals ---
-    igv_total = importe_total * 0.18
+    igv_total = importe_total * (0.18/1.18)
     total_gravado = importe_total - igv_total
     data_total = [
         ["Total Gravado", f"{simbolo} {total_gravado:.2f}"],
