@@ -1,176 +1,88 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
+<html lang="es" class="light"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Cotizaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuración de Tailwind CSS para el modo oscuro
+        // Se activa el modo oscuro basándose en la presencia de la clase 'dark' en el elemento html
+        tailwind.config = {
+            darkMode: 'class', 
+            theme: {
+                extend: {
+                    // Puedes extender tu tema aquí si es necesario
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
+        /* Configuración de fuente Inter para una apariencia moderna */
         body {
-            font-family: Arial, sans-serif;
-            margin: 0 auto;
-            padding: 20px;
-            width: 100%;
-            max-width: 100%;
+            font-family: 'Inter', sans-serif;
+            /* Transición suave para los cambios de modo oscuro/claro */
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
-
-        h1 {
-            color: #004aad;
-            text-align: center;
+        /* Asegura que los inputs dentro de la tabla tengan el ancho completo */
+        #productos input[type="text"],
+        #productos input[type="number"] {
+            @apply w-full;
         }
-
-        label {
+        /* Estilo para el interruptor de modo oscuro */
+        .toggle-switch {
+            /* Se aplican propiedades directas para asegurar la visibilidad del interruptor */
+            position: relative;
             display: inline-block;
-            width: 100%;
-            font-weight: bold;
-        }
-
-        input, select, button {
-            padding: 12px;
-            margin-bottom: 15px;
-            width: 100%;
-        }
-
-        button {
-            background-color: #004aad;
-            color: white;
-            border: none;
+            width: 48px; /* Ancho del interruptor */
+            height: 24px; /* Alto del interruptor */
+            border-radius: 9999px; /* Bordes completamente redondeados */
             cursor: pointer;
-            border-radius: 4px;
+            transition: background-color 0.3s ease;
+            background-color: #D1D5DB; /* bg-gray-300 en modo claro */
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra interna */
         }
-
-        button:hover {
-            background-color: #003a87;
+        .toggle-switch.dark {
+            background-color: #4A5568; /* bg-gray-600 en modo oscuro */
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 14px;
-        }
-
-        th {
-            background-color: #004aad;
-            color: white;
-            padding: 10px;
-        }
-
-        td {
-            padding: 8px;
-            border: 1px solid #ddd;
-            word-wrap: break-word;
-            white-space: normal;
-        }
-
-        input[type="submit"] {
-            background-color: #004aad;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 4px;
-            display: block;
-            margin: 20px auto;
-            width: auto;
-        }
-
-        /* Estilos para el modal de carga */
-        .modal-carga {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-carga-contenido {
+        .toggle-switch-circle {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            left: 4px; /* Posición inicial del círculo */
+            top: 4px; /* Posición inicial del círculo */
+            width: 16px; /* Ancho del círculo */
+            height: 16px; /* Alto del círculo */
             background-color: white;
-            padding: 40px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            width: 300px;
+            border-radius: 9999px; /* Círculo completamente redondeado */
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra del círculo */
         }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 74, 173, 0.3);
-            border-radius: 50%;
-            border-top-color: #004aad;
-            animation: spin 1s ease-in-out infinite;
-            margin: 0 auto 20px;
-        }
-
-        .spinner-message {
-            font-size: 18px;
-            color: #004aad;
-            font-weight: bold;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 767px) {
-            label {
-                width: 100%;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            input, select, button {
-                width: 100%;
-            }
-
-            button {
-                font-size: 14px;
-            }
-        }
-
-        @media (min-width: 768px) and (max-width: 1024px) {
-            input, select, button {
-                width: 80%;
-            }
-        }
-
-        @media (min-width: 1025px) {
-            body {
-                width: 800px;
-            }
+        .toggle-switch.dark .toggle-switch-circle {
+            transform: translateX(24px); /* Mueve el círculo a la derecha en modo oscuro (48px - 16px - 4px*2 = 24px) */
         }
     </style>
     <script>
+        // Función para convertir el texto a mayúsculas mientras se escribe
         function convertirAMayusculas(event) {
             event.target.value = event.target.value.toUpperCase();
         }
 
+        // Función para consultar datos de la API (DNI/RUC)
         function consultarDatos() {
             const tipo_documento = document.getElementById('documento').value;
             const numero_documento = document.getElementById('nro_documento').value.trim();
             
+            // Muestra un mensaje si el número de documento está vacío
             if (!numero_documento) {
-                alert('Por favor ingrese un número de documento');
+                // Reemplazado alert con un modal para mejor UX
+                mostrarMensajeModal('Por favor ingrese un número de documento.');
                 return;
             }
 
+            // Deshabilita el botón y cambia su texto durante la búsqueda
             document.getElementById('btnBuscar').disabled = true;
             document.getElementById('btnBuscar').textContent = 'Buscando...';
+            mostrarSpinner(true, "Buscando datos...");
 
+            // Realiza la petición a la API de consulta
             fetch('/consultar_api', {
                 method: 'POST',
                 headers: {
@@ -182,74 +94,112 @@
                 })
             })
             .then(response => {
+                // Verifica si la respuesta no fue exitosa
                 if (!response.ok) throw new Error('Error en la respuesta del servidor');
                 return response.json();
             })
             .then(data => {
+                // Actualiza los campos de nombre y dirección si la consulta fue exitosa
                 if (data.success) {
                     document.getElementById('nombre_cliente').value = data.nombre || '';
                     document.getElementById('direccion_cliente').value = data.direccion || '';
+                    mostrarSpinner(true, "Datos encontrados!");
+                    setTimeout(() => mostrarSpinner(false), 1000);
                 } else {
-                    alert(data.message || 'No se encontraron datos');
+                    // Muestra un mensaje de error si no se encontraron datos
+                    mostrarMensajeModal(data.message || 'No se encontraron datos.');
+                    mostrarSpinner(false);
                 }
             })
             .catch(error => {
+                // Manejo de errores de la petición
                 console.error('Error:', error);
-                alert('Error al consultar: ' + error.message);
+                mostrarMensajeModal('Error al consultar: ' + error.message);
+                mostrarSpinner(false);
             })
             .finally(() => {
+                // Restaura el estado del botón al finalizar la petición
                 document.getElementById('btnBuscar').disabled = false;
                 document.getElementById('btnBuscar').textContent = 'Buscar Datos';
             });
         }
 
+        // Función para agregar una nueva fila de producto a la tabla
         function agregarProducto() {
             const tabla = document.getElementById('productos').getElementsByTagName('tbody')[0];
             const nuevaFila = tabla.insertRow();
             
+            // Inserta el HTML para los inputs de descripción, unidades y total, y el botón de eliminar
             nuevaFila.innerHTML = `
-                <td><input type="text" name="descripcion[]" required oninput="convertirAMayusculas(event)"></td>
-                <td><input type="number" name="unidades[]" min="1" required></td>
-                <td><input type="number" name="total[]" step="0.01" min="0" required></td>
-                <td><button type="button" onclick="eliminarFila(this)" class="btn-eliminar">Eliminar</button></td>
+                <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                    <input type="text" name="descripcion[]" required oninput="convertirAMayusculas(event)" class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                </td>
+                <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                    <input type="number" name="unidades[]" min="1" required class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                </td>
+                <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                    <input type="number" name="total[]" step="0.01" min="0" required class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                </td>
+                <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                    <button type="button" onclick="eliminarFila(this)" class="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-2 rounded-md transition duration-300 ease-in-out">Eliminar</button>
+                </td>
             `;
         }
 
+        // Función para eliminar una fila de producto de la tabla
         function eliminarFila(btn) {
             const fila = btn.parentNode.parentNode;
             fila.parentNode.removeChild(fila);
         }
 
+        // Función para validar el formulario antes de enviarlo
         function validarFormulario() {
             const nombre = document.getElementById('nombre_cliente').value.trim();
             const direccion = document.getElementById('direccion_cliente').value.trim();
             const filas = document.querySelectorAll('#productos tbody tr');
             
+            // Valida que los campos de cliente no estén vacíos
             if (!nombre || !direccion) {
-                alert('Por favor complete todos los campos del cliente');
+                mostrarMensajeModal('Por favor complete todos los campos del cliente.');
                 return false;
             }
             
+            // Valida que se haya agregado al menos un producto
             if (filas.length < 1) {
-                alert('Debe agregar al menos un producto');
+                mostrarMensajeModal('Debe agregar al menos un producto.');
                 return false;
             }
             
             return true;
         }
 
+        // Función para mostrar/ocultar el spinner de carga
         function mostrarSpinner(mostrar, mensaje = 'Generando...') {
             const modalCarga = document.getElementById('modalCarga');
             const spinnerMsg = document.getElementById('spinner-message');
             
             if (mostrar) {
                 spinnerMsg.textContent = mensaje;
-                modalCarga.style.display = 'block';
+                modalCarga.classList.remove('hidden'); // Muestra el modal
             } else {
-                modalCarga.style.display = 'none';
+                modalCarga.classList.add('hidden'); // Oculta el modal
             }
         }
 
+        // Función para mostrar mensajes en un modal personalizado en lugar de alert()
+        function mostrarMensajeModal(mensaje) {
+            const modalMensaje = document.getElementById('modalMensaje');
+            const mensajeTexto = document.getElementById('mensajeTexto');
+            mensajeTexto.textContent = mensaje;
+            modalMensaje.classList.remove('hidden');
+        }
+
+        // Función para cerrar el modal de mensaje
+        function cerrarModalMensaje() {
+            document.getElementById('modalMensaje').classList.add('hidden');
+        }
+
+        // Función para limpiar la sesión (útil para reintentos o errores)
         function limpiarSesion() {
             return fetch('/limpiar_sesion', {
                 method: 'POST',
@@ -260,132 +210,237 @@
             });
         }
 
+        // Función para alternar el modo oscuro/claro
+        function toggleDarkMode() {
+            const htmlElement = document.documentElement;
+            const isDarkMode = htmlElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', isDarkMode ? 'dark' : 'light'); // Guarda la preferencia
+            updateToggleSwitch(isDarkMode); // Actualiza el estado visual del interruptor
+        }
+
+        // Función para aplicar el modo oscuro/claro al cargar la página
+        function applyDarkMode() {
+            const savedMode = localStorage.getItem('darkMode');
+            const htmlElement = document.documentElement;
+            if (savedMode === 'dark') {
+                htmlElement.classList.add('dark');
+                updateToggleSwitch(true);
+            } else {
+                htmlElement.classList.remove('dark');
+                updateToggleSwitch(false);
+            }
+        }
+
+        // Función para actualizar el estado visual del interruptor
+        function updateToggleSwitch(isDarkMode) {
+            const toggleSwitch = document.getElementById('darkModeToggle');
+            if (toggleSwitch) {
+                if (isDarkMode) {
+                    toggleSwitch.classList.add('dark');
+                } else {
+                    toggleSwitch.classList.remove('dark');
+                }
+            }
+        }
+
+        // Event listener para cuando el DOM esté completamente cargado
         document.addEventListener('DOMContentLoaded', function() {
+            applyDarkMode(); // Aplica el modo oscuro/claro guardado al cargar la página
+
+            // Event listener para el envío del formulario de cotización
             document.getElementById('cotizacionForm').addEventListener('submit', function(event) {
-                event.preventDefault();
+                event.preventDefault(); // Previene el envío por defecto del formulario
                 
+                // Valida el formulario antes de proceder
                 if (!validarFormulario()) {
                     return;
                 }
                 
                 const formData = new FormData(this);
                 const submitBtn = this.querySelector('[type="submit"]');
+                
+                // Deshabilita el botón de envío y muestra el spinner
                 submitBtn.disabled = true;
                 submitBtn.value = 'Generando...';
-                mostrarSpinner(true, "Generando...");
+                mostrarSpinner(true, "Generando PDF...");
                 
+                // Realiza la petición para generar el PDF
                 fetch('/generar_pdf', {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => {
+                    // Manejo de errores de la respuesta del servidor
                     if (!response.ok) {
                         return response.json().then(err => {
                             throw new Error(err.error || 'Error en el servidor');
                         });
                     }
-                    return response.blob();
+                    return response.blob(); // Obtiene la respuesta como un Blob (para el PDF)
                 })
                 .then(blob => {
+                    // Crea una URL para el Blob y descarga el PDF
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = 'cotizacion.pdf';
                     document.body.appendChild(a);
                     a.click();
-                    window.URL.revokeObjectURL(url);
+                    window.URL.revokeObjectURL(url); // Libera la URL del objeto
                     document.body.removeChild(a);
                     
+                    // Muestra mensaje de éxito y oculta el spinner
                     mostrarSpinner(true, "¡Listo!");
                     setTimeout(() => {
                         mostrarSpinner(false);
                     }, 1000);
                 })
                 .catch(error => {
+                    // Manejo de errores durante la generación del PDF
                     console.error('Error:', error);
-                    mostrarSpinner(true, "Reintentando...");
+                    mostrarSpinner(true, "Error: " + error.message + ". Reintentando...");
+                    // Intenta limpiar la sesión y reenvía el formulario después de un breve retraso
                     setTimeout(() => {
                         limpiarSesion().then(() => {
                             mostrarSpinner(false);
-                            document.getElementById('cotizacionForm').submit();
+                            document.getElementById('cotizacionForm').submit(); // Reenvía el formulario
+                        }).catch(cleanError => {
+                            console.error('Error al limpiar sesión:', cleanError);
+                            mostrarMensajeModal('Error crítico: ' + error.message + '. Por favor, intente de nuevo.');
+                            mostrarSpinner(false);
                         });
                     }, 2000);
                 })
                 .finally(() => {
+                    // Restaura el estado del botón al finalizar
                     submitBtn.disabled = false;
                     submitBtn.value = 'Generar Cotización';
                 });
             });
+
+            // Event listener para el botón de cerrar el modal de mensaje
+            document.getElementById('cerrarModalMensaje').addEventListener('click', cerrarModalMensaje);
         });
     </script>
 </head>
-<body>
-    <h1>Generador de Cotizaciones</h1>
-    <form id="cotizacionForm">
-        <div>
-            <label for="documento">DOCUMENTO:</label>
-            <select id="documento" name="documento" required>
-                <option value="DNI">DNI</option>
-                <option value="RUC">RUC</option>
-            </select>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ease-in-out">
+    <div class="bg-white dark:bg-gray-800 p-6 md:p-10 rounded-lg shadow-xl w-full max-w-md lg:max-w-3xl transition-colors duration-300 ease-in-out">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-blue-800 dark:text-blue-300 text-center flex-grow transition-colors duration-300 ease-in-out">Generador de Cotizaciones</h1>
+            <div class="flex items-center space-x-2">
+                <span class="text-gray-700 dark:text-gray-300 text-sm font-semibold">Modo Oscuro</span>
+                <div id="darkModeToggle" class="toggle-switch" onclick="toggleDarkMode()">
+                    <div class="toggle-switch-circle"></div>
+                </div>
+            </div>
         </div>
+        
+        <form id="cotizacionForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="documento" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">DOCUMENTO:</label>
+                    <select id="documento" name="documento" required
+                            class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                        <option value="DNI">DNI</option>
+                        <option value="RUC">RUC</option>
+                    </select>
+                </div>
 
-        <div>
-            <label for="nro_documento">NÚMERO:</label>
-            <input type="text" id="nro_documento" name="nro_documento" required>
-            <button type="button" id="btnBuscar" onclick="consultarDatos()">Buscar Datos</button>
+                <div>
+                    <label for="nro_documento" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">NÚMERO:</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="nro_documento" name="nro_documento" required
+                               class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                        <button type="button" id="btnBuscar" onclick="consultarDatos()"
+                                class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline transition duration-300 ease-in-out whitespace-nowrap dark:bg-blue-600 dark:hover:bg-blue-700">
+                            Buscar Datos
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label for="nombre_cliente" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">NOMBRE DEL CLIENTE:</label>
+                <input type="text" id="nombre_cliente" name="nombre_cliente" required oninput="convertirAMayusculas(event)"
+                       class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+            </div>
+
+            <div>
+                <label for="direccion_cliente" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">DIRECCIÓN:</label>
+                <input type="text" id="direccion_cliente" name="direccion_cliente" required oninput="convertirAMayusculas(event)"
+                       class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+            </div>
+
+            <div>
+                <label for="moneda" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">MONEDA:</label>
+                <select id="moneda" name="moneda" required
+                        class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                    <option value="SOLES">SOLES</option>
+                    <option value="DOLARES">DÓLARES</option>
+                </select>
+            </div>
+
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mt-6 mb-4 transition-colors duration-300 ease-in-out">Productos</h2>
+            <div class="overflow-x-auto rounded-lg shadow">
+                <table id="productos" class="min-w-full bg-white dark:bg-gray-800 transition-colors duration-300 ease-in-out">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 rounded-tl-lg transition-colors duration-300 ease-in-out">DESCRIPCIÓN</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 transition-colors duration-300 ease-in-out">UNIDADES</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 transition-colors duration-300 ease-in-out">TOTAL</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 rounded-tr-lg transition-colors duration-300 ease-in-out">ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                                <input type="text" name="descripcion[]" required oninput="convertirAMayusculas(event)"
+                                       class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                            </td>
+                            <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                                <input type="number" name="unidades[]" min="1" required
+                                       class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                            </td>
+                            <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                                <input type="number" name="total[]" step="0.01" min="0" required
+                                       class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                            </td>
+                            <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                                <button type="button" onclick="eliminarFila(this)" class="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-2 rounded-md transition duration-300 ease-in-out">Eliminar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="button" onclick="agregarProducto()"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline transition duration-300 ease-in-out w-full mt-4 dark:bg-green-700 dark:hover:bg-green-800">
+                Agregar Producto
+            </button>
+
+            <input type="submit" value="Generar Cotización"
+                   class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline transition duration-300 ease-in-out w-full mt-6 cursor-pointer dark:bg-blue-600 dark:hover:bg-blue-700">
+        </form>
+
+        <button onclick="window.location.href='/ver_cotizaciones';"
+                class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline transition duration-300 ease-in-out w-full mt-4 dark:bg-gray-700 dark:hover:bg-gray-800">
+            Ver Cotizaciones
+        </button>
+    </div>
+
+    <div id="modalCarga" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center transition-colors duration-300 ease-in-out">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500 dark:border-blue-300 mx-auto mb-4 transition-colors duration-300 ease-in-out"></div>
+            <div id="spinner-message" class="text-lg font-semibold text-blue-700 dark:text-blue-300 transition-colors duration-300 ease-in-out"></div>
         </div>
+    </div>
 
-        <div>
-            <label for="nombre_cliente">NOMBRE DEL CLIENTE:</label>
-            <input type="text" id="nombre_cliente" name="nombre_cliente" required oninput="convertirAMayusculas(event)">
-        </div>
-
-        <div>
-            <label for="direccion_cliente">DIRECCIÓN:</label>
-            <input type="text" id="direccion_cliente" name="direccion_cliente" required oninput="convertirAMayusculas(event)">
-        </div>
-
-        <div>
-            <label for="moneda">MONEDA:</label>
-            <select id="moneda" name="moneda" required>
-                <option value="SOLES">SOLES</option>
-                <option value="DOLARES">DÓLARES</option>
-            </select>
-        </div>
-
-        <h2>Productos</h2>
-        <table id="productos">
-            <thead>
-                <tr>
-                    <th>DESCRIPCIÓN</th>
-                    <th>UNIDADES</th>
-                    <th>TOTAL</th>
-                    <th>ACCIÓN</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="text" name="descripcion[]" required oninput="convertirAMayusculas(event)"></td>
-                    <td><input type="number" name="unidades[]" min="1" required></td>
-                    <td><input type="number" name="total[]" step="0.01" min="0" required></td>
-                    <td><button type="button" onclick="eliminarFila(this)" class="btn-eliminar">Eliminar</button></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <button type="button" onclick="agregarProducto()">Agregar Producto</button>
-
-        <input type="submit" value="Generar Cotización">
-    </form>
-
-    <button onclick="window.location.href='/ver_cotizaciones';">Ver Cotizaciones</button>
-
-    <!-- Modal de carga -->
-    <div id="modalCarga" class="modal-carga">
-        <div class="modal-carga-contenido">
-            <div class="spinner"></div>
-            <div id="spinner-message" class="spinner-message"></div>
+    <div id="modalMensaje" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto transition-colors duration-300 ease-in-out">
+            <p id="mensajeTexto" class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6 transition-colors duration-300 ease-in-out"></p>
+            <button id="cerrarModalMensaje" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline transition duration-300 ease-in-out dark:bg-blue-600 dark:hover:bg-blue-700">
+                Aceptar
+            </button>
         </div>
     </div>
 </body>

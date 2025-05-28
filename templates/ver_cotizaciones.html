@@ -1,395 +1,211 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
+<html lang="es" class="light"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ver Cotizaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuración de Tailwind CSS para el modo oscuro
+        tailwind.config = {
+            darkMode: 'class', 
+            theme: {
+                extend: {
+                    colors: {
+                        'accent-gold': '#ffeba7', 
+                        'accent-gold-dark': '#e0c26b', 
+                        'dark-bg-body': '#1a1b25', 
+                        'dark-bg-card': '#2a2b38', 
+                        'dark-bg-field': '#1f2029', 
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --color-primario: #004aad;
-            --color-secundario: #003a87;
-            --color-texto: #333;
-            --color-fondo: #f8f9fa;
-            --color-borde: #dee2e6;
-            --color-error: #dc3545;
-            --color-error-hover: #c82333;
-            --color-warning: #ffc107;
-            --color-warning-hover: #e0a800;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-        }
-
+        /* Configuración de fuente Inter para una apariencia moderna y consistente */
         body {
-            background-color: var(--color-fondo);
-            padding: 20px;
-            color: var(--color-texto);
+            font-family: 'Inter', sans-serif;
+            /* Transición suave para los cambios de modo oscuro/claro */
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            overflow-x: auto;
+        /* Estilo para el interruptor de modo oscuro */
+        .toggle-switch {
             position: relative;
+            display: inline-block;
+            width: 48px; /* Ancho del interruptor */
+            height: 24px; /* Alto del interruptor */
+            border-radius: 9999px; /* Bordes completamente redondeados */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            background-color: #D1D5DB; /* bg-gray-300 en modo claro */
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra interna */
         }
-
-        h1 {
-            color: var(--color-primario);
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-            margin-top: 30px;
+        .toggle-switch.dark {
+            background-color: #4A5568; /* bg-gray-600 en modo oscuro */
         }
-
-        .back-arrow {
+        .toggle-switch-circle {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            color: var(--color-primario);
-            text-decoration: none;
-            cursor: pointer;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .back-arrow:hover {
-            color: var(--color-secundario);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--color-borde);
-        }
-
-        th {
-            background-color: var(--color-primario);
-            color: white;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
-        }
-
-        tr:hover {
-            background-color: rgba(0, 74, 173, 0.05);
-        }
-
-        .btn {
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-            margin-right: 5px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-        }
-
-        .btn-descargar {
-            background-color: var(--color-primario);
-            color: white;
-        }
-
-        .btn-descargar:hover {
-            background-color: var(--color-secundario);
-        }
-
-        .btn-editar {
-            background-color: var(--color-warning);
-            color: #212529;
-        }
-
-        .btn-editar:hover {
-            background-color: var(--color-warning-hover);
-        }
-
-        .btn-eliminar {
-            background-color: var(--color-error);
-            color: white;
-        }
-
-        .btn-eliminar:hover {
-            background-color: var(--color-error-hover);
-        }
-
-        .acciones {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-
-        .mensaje-exito {
-            color: green;
-            text-align: center;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .mensaje-error {
-            color: var(--color-error);
-            text-align: center;
-            margin: 10px 0;
-            display: none;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-
-        .modal-contenido {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 800px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .cerrar {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .cerrar:hover {
-            color: black;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .modal-carga {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-carga-contenido {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            left: 4px; /* Posición inicial del círculo */
+            top: 4px; /* Posición inicial del círculo */
+            width: 16px; /* Ancho del círculo */
+            height: 16px; /* Alto del círculo */
             background-color: white;
-            padding: 40px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            width: 300px;
+            border-radius: 9999px; /* Círculo completamente redondeado */
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra del círculo */
+        }
+        .toggle-switch.dark .toggle-switch-circle {
+            transform: translateX(24px); /* Mueve el círculo a la derecha en modo oscuro */
         }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 74, 173, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--color-primario);
-            animation: spin 1s ease-in-out infinite;
-            margin: 0 auto 20px;
+        /* Estilos personalizados para la barra de desplazamiento del modal de edición */
+        .modal-contenido::-webkit-scrollbar {
+            width: 8px; /* Ancho de la barra de desplazamiento */
         }
 
-        .spinner-message {
-            font-size: 18px;
-            color: var(--color-primario);
-            font-weight: bold;
+        .modal-contenido::-webkit-scrollbar-track {
+            background: #e0e0e0; /* Color de fondo de la pista en modo claro */
+            border-radius: 10px;
+        }
+        .dark .modal-contenido::-webkit-scrollbar-track {
+            background: #333; /* Color de fondo de la pista en modo oscuro */
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .modal-contenido::-webkit-scrollbar-thumb {
+            background: #888; /* Color del "pulgar" de la barra de desplazamiento en modo claro */
+            border-radius: 10px;
+        }
+        .dark .modal-contenido::-webkit-scrollbar-thumb {
+            background: #555; /* Color del "pulgar" en modo oscuro */
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-
-            table {
-                display: block;
-                overflow-x: auto;
-            }
-
-            th, td {
-                padding: 8px 10px;
-                font-size: 14px;
-            }
-
-            .btn {
-                padding: 6px 8px;
-                font-size: 12px;
-            }
-
-            h1 {
-                font-size: 20px;
-            }
-
-            .modal-contenido {
-                width: 95%;
-                margin: 10% auto;
-            }
+        .modal-contenido::-webkit-scrollbar-thumb:hover {
+            background: #555; /* Color del "pulgar" al pasar el ratón en modo claro */
         }
-
-        @media (max-width: 480px) {
-            .acciones {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-                margin-bottom: 5px;
-                margin-right: 0;
-            }
+        .dark .modal-contenido::-webkit-scrollbar-thumb:hover {
+            background: #777; /* Color del "pulgar" al pasar el ratón en modo oscuro */
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <a href="/index" class="back-arrow">&larr; Volver</a>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ease-in-out">
 
-        <h1>Ver Cotizaciones</h1>
+    <div class="card bg-white dark:bg-gray-800 p-6 md:p-10 rounded-lg shadow-xl w-full max-w-7xl transition-colors duration-300 ease-in-out relative">
+        <div class="absolute top-4 right-4 flex items-center space-x-2">
+            <span class="text-gray-700 dark:text-gray-300 text-sm font-semibold">Modo Oscuro</span>
+            <div id="darkModeToggle" class="toggle-switch" onclick="toggleDarkMode()">
+                <div class="toggle-switch-circle"></div>
+            </div>
+        </div>
 
-        <div id="mensaje-exito" class="mensaje-exito"></div>
-        <div id="mensaje-error" class="mensaje-error"></div>
+        <a href="/index" class="absolute top-4 left-4 text-blue-800 dark:text-blue-300 text-lg md:text-xl font-semibold flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 ease-in-out">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg>
+            Volver
+        </a>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>N° Cotización</th>
-                    <th>Cliente</th>
-                    <th>Fecha de Creación</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cotizacion in cotizaciones %}
-                <tr data-id="{{ cotizacion.id }}">
-                    <td>{{ cotizacion.numero_cotizacion }}</td>
-                    <td>{{ cotizacion.nombre_cliente }}</td>
-                    <td>{{ cotizacion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
-                    <td class="acciones">
-                        <button class="btn btn-descargar" onclick="descargarPDF('{{ cotizacion.id }}')">
-                            Descargar
-                        </button>
-                        <button class="btn btn-editar" onclick="mostrarModalEdicion('{{ cotizacion.id }}')">
-                            Editar
-                        </button>
-                        <button class="btn btn-eliminar" onclick="eliminarCotizacion('{{ cotizacion.id }}', this)">
-                            Eliminar
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h1 class="title text-2xl font-semibold text-blue-800 dark:text-blue-300 mt-6 mb-8 text-center transition-colors duration-300 ease-in-out">Ver Cotizaciones</h1>
+
+        <div id="mensaje-exito" class="text-green-600 dark:text-green-400 text-center my-4 font-semibold hidden"></div>
+        <div id="mensaje-error" class="text-red-600 dark:text-red-400 text-center my-4 font-semibold hidden"></div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse mt-8">
+                <thead>
+                    <tr>
+                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out rounded-tl-lg">N° Cotización</th>
+                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out">Cliente</th>
+                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out">Fecha de Creación</th>
+                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out rounded-tr-lg">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cotizacion in cotizaciones %}
+                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors duration-200 ease-in-out" data-id="{{ cotizacion.id }}">
+                        <td class="py-3 px-4 text-gray-800 dark:text-gray-200">{{ cotizacion.numero_cotizacion }}</td>
+                        <td class="py-3 px-4 text-gray-800 dark:text-gray-200">{{ cotizacion.nombre_cliente }}</td>
+                        <td class="py-3 px-4 text-gray-800 dark:text-gray-200">{{ cotizacion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+                        <td class="acciones py-3 px-4 flex flex-wrap gap-2 sm:flex-nowrap">
+                            <button class="btn bg-blue-700 hover:bg-blue-800 text-white dark:bg-blue-600 dark:hover:bg-blue-700 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300 ease-in-out" onclick="descargarPDF('{{ cotizacion.id }}')">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 11.586V3a1 1 0 112 0v8.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                                Descargar
+                            </button>
+                            <button class="btn bg-green-600 hover:bg-green-700 text-white dark:bg-green-500 dark:hover:bg-green-600 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300 ease-in-out" onclick="mostrarModalEdicion('{{ cotizacion.id }}')">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-7.707 7.707A2 2 0 018.172 14.5L5 15l1.414-3.172a2 2 0 01.586-1.172l7.707-7.707zM10.172 17a2 2 0 01-2.828 0L3 12.828l.707-.707A2 2 0 014.5 9.172l7.707-7.707a2 2 0 012.828 2.828L10.172 17z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                                </svg>
+                                Editar
+                            </button>
+                            <button class="btn bg-red-600 hover:bg-red-700 text-white dark:bg-red-500 dark:hover:bg-red-600 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300 ease-in-out" onclick="eliminarCotizacion('{{ cotizacion.id }}', this)">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-1 1v1H6a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 000-2h-2V3a1 1 0 00-1-1H9zM7 6v10a1 1 0 001 1h8a1 1 0 001-1V6H7z" clip-rule="evenodd"></path>
+                                    <path fill-rule="evenodd" d="M10 12a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM7 12a1 1 0 011-1h1a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div id="modalEdicion" class="modal">
-        <div class="modal-contenido">
-            <span class="cerrar" onclick="cerrarModal()">&times;</span>
-            <h2>Editar Cotización <span id="numero-cotizacion"></span></h2>
+    <div id="modalEdicion" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="modal-contenido bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-1/2 max-w-2xl relative transition-colors duration-300 ease-in-out max-h-[90vh] overflow-y-auto">
+            <span class="cerrar absolute top-3 right-5 text-gray-500 dark:text-gray-400 text-3xl font-bold cursor-pointer hover:text-gray-700 dark:hover:text-gray-200" onclick="cerrarModal()">&times;</span>
+            <h2 class="text-xl font-semibold text-blue-800 dark:text-blue-300 mb-6 mt-4">Editar Cotización <span id="numero-cotizacion"></span></h2>
             <form id="formEdicion">
                 <input type="hidden" id="cotizacion-id">
 
-                <div class="form-group">
-                    <label for="edit-nombre">Nombre del Cliente:</label>
-                    <input type="text" id="edit-nombre" required>
+                <div class="form-group mb-4">
+                    <label for="edit-nombre" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Nombre del Cliente:</label>
+                    <input type="text" id="edit-nombre" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                 </div>
 
-                <div class="form-group">
-                    <label for="edit-documento">Tipo de Documento:</label>
-                    <select id="edit-documento" required>
+                <div class="form-group mb-4">
+                    <label for="edit-documento" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Tipo de Documento:</label>
+                    <select id="edit-documento" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                         <option value="DNI">DNI</option>
                         <option value="RUC">RUC</option>
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="edit-numero">Número de Documento:</label>
-                    <input type="text" id="edit-numero" required>
+                <div class="form-group mb-4">
+                    <label for="edit-numero" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Número de Documento:</label>
+                    <input type="text" id="edit-numero" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                 </div>
 
-                <div class="form-group">
-                    <label for="edit-direccion">Dirección:</label>
-                    <textarea id="edit-direccion" required></textarea>
+                <div class="form-group mb-4">
+                    <label for="edit-direccion" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Dirección:</label>
+                    <textarea id="edit-direccion" required class="w-full p-2 border rounded-md min-h-[100px] resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label for="edit-moneda">Moneda:</label>
-                    <select id="edit-moneda" required>
+                <div class="form-group mb-4">
+                    <label for="edit-moneda" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Moneda:</label>
+                    <select id="edit-moneda" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                         <option value="SOLES">Soles</option>
                         <option value="DOLARES">Dólares</option>
                     </select>
                 </div>
 
-                <div id="productos-container">
-                    <h3>Productos</h3>
+                <div id="productos-container" class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Productos</h3>
                 </div>
 
-                <button type="button" class="btn" onclick="agregarProductoEdicion()"
-                         style="background-color: var(--color-primario); color: white; margin-top: 10px;">
+                <button type="button" class="btn bg-blue-700 hover:bg-blue-800 text-white dark:bg-blue-600 dark:hover:bg-blue-700 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300 ease-in-out" onclick="agregarProductoEdicion()">
                     + Agregar Producto
                 </button>
 
-                <div style="margin-top: 20px; text-align: right;">
-                    <button type="button" class="btn btn-editar" onclick="cerrarModal()">
+                <div class="text-right mt-6">
+                    <button type="button" class="btn bg-gray-300 hover:bg-gray-400 text-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300 ease-in-out mr-2" onclick="cerrarModal()">
                         Cancelar
                     </button>
-                    <button type="submit" class="btn"
-                            style="background-color: var(--color-primario); color: white;">
+                    <button type="submit" class="btn bg-blue-700 hover:bg-blue-800 text-white dark:bg-blue-600 dark:hover:bg-blue-700 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300 ease-in-out">
                         Guardar Cambios
                     </button>
                 </div>
@@ -397,33 +213,68 @@
         </div>
     </div>
 
-    <div id="modalCarga" class="modal-carga">
-        <div class="modal-carga-contenido">
-            <div class="spinner"></div>
-            <div id="spinner-message" class="spinner-message">Guardando cambios...</div>
+    <div id="modalCarga" class="modal-carga hidden fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-50">
+        <div class="modal-carga-contenido bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center w-72 md:w-80 transition-colors duration-300 ease-in-out">
+            <div class="spinner w-12 h-12 border-[5px] border-gray-400 dark:border-gray-500 border-t-blue-600 dark:border-t-blue-300 rounded-full animate-spin mx-auto mb-4"></div>
+            <div id="spinner-message" class="spinner-message text-lg font-semibold text-blue-700 dark:text-blue-300">Guardando cambios...</div>
         </div>
     </div>
 
     <script>
+        // Funciones del modo oscuro/claro (reutilizadas de las otras páginas)
+        function toggleDarkMode() {
+            const htmlElement = document.documentElement;
+            const isDarkMode = htmlElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', isDarkMode ? 'dark' : 'light'); // Guarda la preferencia
+            updateToggleSwitch(isDarkMode); // Actualiza el estado visual del interruptor
+        }
+
+        function applyDarkMode() {
+            const savedMode = localStorage.getItem('darkMode');
+            const htmlElement = document.documentElement;
+            if (savedMode === 'dark') {
+                htmlElement.classList.add('dark');
+                updateToggleSwitch(true);
+            } else {
+                htmlElement.classList.remove('dark');
+                updateToggleSwitch(false);
+            }
+        }
+
+        function updateToggleSwitch(isDarkMode) {
+            const toggleSwitch = document.getElementById('darkModeToggle');
+            if (toggleSwitch) {
+                if (isDarkMode) {
+                    toggleSwitch.classList.add('dark');
+                } else {
+                    toggleSwitch.classList.remove('dark');
+                }
+            }
+        }
+
+        // Resto del JavaScript existente, adaptado para usar las nuevas clases/IDs de Tailwind
         function mostrarMensaje(tipo, mensaje) {
             const elemento = document.getElementById(`mensaje-${tipo}`);
             elemento.textContent = mensaje;
-            elemento.style.display = 'block';
+            elemento.classList.remove('hidden'); // Muestra el mensaje
 
             setTimeout(() => {
-                elemento.style.display = 'none';
+                elemento.classList.add('hidden'); // Oculta el mensaje después de 5 segundos
             }, 5000);
         }
 
         function mostrarSpinner(mostrar, mensaje = 'Guardando cambios...') {
             const modalCarga = document.getElementById('modalCarga');
             const spinnerMsg = document.getElementById('spinner-message');
-            
+            const body = document.body; // Obtener el elemento body
+
             if (mostrar) {
                 spinnerMsg.textContent = mensaje;
-                modalCarga.style.display = 'block';
+                modalCarga.classList.remove('hidden'); // Muestra el modal
+                body.style.overflow = 'hidden'; // Evita el desplazamiento del fondo
             } else {
-                modalCarga.style.display = 'none';
+                modalCarga.classList.add('hidden'); // Oculta el modal
+                body.style.overflow = ''; // Restaura el desplazamiento del fondo
             }
         }
 
@@ -432,11 +283,38 @@
         }
 
         async function eliminarCotizacion(cotizacionId, boton) {
-            if (!confirm('¿Estás seguro de eliminar esta cotización? Esta acción no se puede deshacer.')) {
+            // Reemplazar confirm() con un modal personalizado para consistencia
+            const confirmDelete = await new Promise(resolve => {
+                const modalConfirm = document.createElement('div');
+                modalConfirm.id = 'modalConfirm';
+                modalConfirm.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-50';
+                modalConfirm.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto transition-colors duration-300 ease-in-out">
+                        <p class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">¿Estás seguro de eliminar esta cotización? Esta acción no se puede deshacer.</p>
+                        <div class="flex justify-center gap-4">
+                            <button id="confirmBtnYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">Sí, eliminar</button>
+                            <button id="confirmBtnNo" class="bg-gray-300 hover:bg-gray-400 text-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200 font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">Cancelar</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modalConfirm);
+
+                document.getElementById('confirmBtnYes').onclick = () => {
+                    document.body.removeChild(modalConfirm);
+                    resolve(true);
+                };
+                document.getElementById('confirmBtnNo').onclick = () => {
+                    document.body.removeChild(modalConfirm);
+                    resolve(false);
+                };
+            });
+
+            if (!confirmDelete) {
                 return;
             }
 
             try {
+                mostrarSpinner(true, 'Eliminando cotización...');
                 const response = await fetch(`/eliminar_cotizacion/${cotizacionId}`, {
                     method: 'POST',
                     headers: {
@@ -446,6 +324,7 @@
                 });
 
                 const data = await response.json();
+                mostrarSpinner(false);
 
                 if (!response.ok) {
                     const errorMsg = data.error || 'Error desconocido al eliminar';
@@ -461,15 +340,16 @@
             } catch (error) {
                 console.error('Error:', error);
                 mostrarMensaje('error', error.message);
+                mostrarSpinner(false);
             }
         }
 
         let modalEdicion = document.getElementById("modalEdicion");
 
         function cerrarModal() {
-            modalEdicion.style.display = "none";
+            modalEdicion.classList.add('hidden'); // Oculta el modal
             document.getElementById("formEdicion").reset();
-            document.getElementById("productos-container").innerHTML = '<h3>Productos</h3>';
+            document.getElementById("productos-container").innerHTML = '<h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Productos</h3>'; // Restablece el título
         }
 
         window.onclick = function(event) {
@@ -480,8 +360,10 @@
 
         async function mostrarModalEdicion(cotizacionId) {
             try {
+                mostrarSpinner(true, 'Cargando cotización...');
                 const response = await fetch(`/obtener_cotizacion/${cotizacionId}`);
                 const data = await response.json();
+                mostrarSpinner(false);
 
                 if (!response.ok) {
                     const errorMsg = data.error || 'Error desconocido al cargar';
@@ -497,21 +379,22 @@
                 document.getElementById("edit-moneda").value = data.moneda || 'SOLES';
 
                 const productosContainer = document.getElementById("productos-container");
-                productosContainer.innerHTML = '<h3>Productos</h3>';
+                productosContainer.innerHTML = '<h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Productos</h3>'; // Restablece el título antes de añadir productos
 
                 if (data.productos && Array.isArray(data.productos) && data.productos.length > 0) {
                     data.productos.forEach((producto, index) => {
                         agregarProductoEdicion(producto, index);
                     });
                 } else {
-                    agregarProductoEdicion();
+                    agregarProductoEdicion(); // Agrega al menos un campo de producto si no hay ninguno
                 }
 
-                modalEdicion.style.display = "block";
+                modalEdicion.classList.remove('hidden'); // Muestra el modal
 
             } catch (error) {
                 console.error('Error:', error);
                 mostrarMensaje('error', error.message);
+                mostrarSpinner(false);
             }
         }
 
@@ -519,35 +402,34 @@
             const productosContainer = document.getElementById("productos-container");
 
             const productoDiv = document.createElement("div");
-            productoDiv.className = "producto-edicion";
-            productoDiv.style.marginBottom = "15px";
-            productoDiv.style.padding = "10px";
-            productoDiv.style.border = "1px solid #ddd";
-            productoDiv.style.borderRadius = "4px";
-
+            // Aplicar clases de Tailwind para el estilo del div de producto en el modal de edición
+            productoDiv.className = "producto-edicion mb-4 p-4 border rounded-md bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out"; 
+            
             const productoId = producto && producto.id ? producto.id : `new-${Date.now()}`;
 
             productoDiv.innerHTML = `
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <h4>Producto ${index !== null ? index + 1 : ''}</h4>
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="font-medium text-gray-700 dark:text-gray-300">Producto ${index !== null ? index + 1 : (productosContainer.children.length)}</h4>
                     <button type="button" onclick="eliminarProductoEdicion(this)"
-                            style="background: var(--color-error); color: white; border: none;
-                                     padding: 2px 6px; border-radius: 3px; cursor: pointer;">
+                            class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors duration-200 ease-in-out">
                         Eliminar
                     </button>
                 </div>
-                <div class="form-group">
-                    <label>Descripción:</label>
-                    <input type="text" name="edit-descripcion[]" value="${producto ? producto.descripcion : ''}" required>
+                <div class="form-group mb-2">
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Descripción:</label>
+                    <input type="text" name="edit-descripcion[]" value="${producto ? producto.descripcion : ''}" required
+                           class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div class="form-group">
-                        <label>Unidades:</label>
-                        <input type="number" name="edit-unidades[]" min="1" value="${producto ? producto.unidades : '1'}" required>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="form-group mb-2">
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Unidades:</label>
+                        <input type="number" name="edit-unidades[]" min="1" value="${producto ? producto.unidades : '1'}" required
+                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                     </div>
-                    <div class="form-group">
-                        <label>Total:</label>
-                        <input type="number" name="edit-total[]" step="0.01" min="0" value="${producto ? producto.total : '0'}" required>
+                    <div class="form-group mb-2">
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total:</label>
+                        <input type="number" name="edit-total[]" step="0.01" min="0" value="${producto ? producto.total : '0'}" required
+                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                     </div>
                 </div>
                 <input type="hidden" name="edit-producto-id[]" value="${productoId}">
@@ -559,11 +441,39 @@
         function eliminarProductoEdicion(boton) {
             const productosDivs = document.querySelectorAll('.producto-edicion');
              if (productosDivs.length > 1) {
-                if (confirm('¿Eliminar este producto?')) {
-                    boton.closest('.producto-edicion').remove();
-                }
+                // Reemplazar confirm() con un modal personalizado para consistencia
+                const confirmDeleteProduct = new Promise(resolve => {
+                    const modalConfirmProduct = document.createElement('div');
+                    modalConfirmProduct.id = 'modalConfirmProduct';
+                    modalConfirmProduct.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-50';
+                    modalConfirmProduct.innerHTML = `
+                        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto transition-colors duration-300 ease-in-out">
+                            <p class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">¿Eliminar este producto?</p>
+                            <div class="flex justify-center gap-4">
+                                <button id="confirmProductBtnYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">Sí, eliminar</button>
+                                <button id="confirmProductBtnNo" class="bg-gray-300 hover:bg-gray-400 text-gray-800 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200 font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">Cancelar</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modalConfirmProduct);
+
+                    document.getElementById('confirmProductBtnYes').onclick = () => {
+                        document.body.removeChild(modalConfirmProduct);
+                        resolve(true);
+                    };
+                    document.getElementById('confirmProductBtnNo').onclick = () => {
+                        document.body.removeChild(modalConfirmProduct);
+                        resolve(false);
+                    };
+                });
+
+                confirmDeleteProduct.then(confirmed => {
+                    if (confirmed) {
+                        boton.closest('.producto-edicion').remove();
+                    }
+                });
             } else {
-                 alert('Debe haber al menos un producto en la cotización.');
+                 mostrarMensaje('error', 'Debe haber al menos un producto en la cotización.');
             }
         }
 
@@ -584,36 +494,46 @@
 
             const productosDivs = document.querySelectorAll('.producto-edicion');
             if (productosDivs.length === 0) {
-                 mostrarMensaje('error', 'Debe agregar al menos un producto.');
-                 mostrarSpinner(false);
-                 return;
+                mostrarMensaje('error', 'Debe agregar al menos un producto.');
+                mostrarSpinner(false);
+                return;
             }
 
+            let allProductsValid = true;
             productosDivs.forEach(div => {
-                 const descripcionInput = div.querySelector('input[name="edit-descripcion[]"]');
-                 const unidadesInput = div.querySelector('input[name="edit-unidades[]"]');
-                 const totalInput = div.querySelector('input[name="edit-total[]"]');
+                const descripcionInput = div.querySelector('input[name="edit-descripcion[]"]');
+                const unidadesInput = div.querySelector('input[name="edit-unidades[]"]');
+                const totalInput = div.querySelector('input[name="edit-total[]"]');
+                const productoIdInput = div.querySelector('input[name="edit-producto-id[]"]');
 
-                 const descripcion = descripcionInput.value.trim();
-                 const unidades = parseInt(unidadesInput.value);
-                 const total = parseFloat(totalInput.value);
+                const descripcion = descripcionInput.value.trim();
+                const unidades = parseInt(unidadesInput.value);
+                const total = parseFloat(totalInput.value);
+                const productoId = productoIdInput.value;
 
-                 if (descripcion && !isNaN(unidades) && unidades > 0 && !isNaN(total) && total >= 0) {
+                if (descripcion && !isNaN(unidades) && unidades > 0 && !isNaN(total) && total >= 0) {
                     formData.productos.push({
+                        id: productoId.startsWith('new-') ? null : productoId, // Si es nuevo, no enviar ID
                         descripcion: descripcion,
                         unidades: unidades,
                         total: total
                     });
-                 } else {
-                     mostrarMensaje('error', 'Por favor, complete todos los campos de los productos correctamente.');
-                 }
+                } else {
+                    allProductsValid = false;
+                }
             });
 
-             if (formData.productos.length === 0) {
-                  mostrarMensaje('error', 'No se pudieron validar los datos de los productos. Revise los campos.');
-                  mostrarSpinner(false);
-                  return;
-             }
+            if (!allProductsValid) {
+                mostrarMensaje('error', 'Por favor, complete todos los campos de los productos correctamente (descripción, unidades > 0, total >= 0).');
+                mostrarSpinner(false);
+                return;
+            }
+
+            if (formData.productos.length === 0) {
+                 mostrarMensaje('error', 'No se pudieron validar los datos de los productos. Revise los campos.');
+                 mostrarSpinner(false);
+                 return;
+            }
 
             try {
                 const response = await fetch(`/actualizar_cotizacion/${cotizacionId}`, {
@@ -637,7 +557,7 @@
                     setTimeout(() => {
                         mostrarSpinner(false);
                         cerrarModal();
-                        location.reload();
+                        location.reload(); // Recarga la página para ver los cambios
                     }, 2000);
                 } else {
                     throw new Error(data.error || 'Error al procesar la solicitud en el servidor');
@@ -647,6 +567,11 @@
                 mostrarMensaje('error', error.message);
                 mostrarSpinner(false);
             }
+        });
+
+        // Aplicar el modo oscuro/claro al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            applyDarkMode(); 
         });
     </script>
 </body>

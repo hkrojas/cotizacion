@@ -1,171 +1,196 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
+<html lang="es" class="light"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuración de Tailwind CSS para el modo oscuro
+        // Se activa el modo oscuro basándose en la presencia de la clase 'dark' en el elemento html
+        tailwind.config = {
+            darkMode: 'class', 
+            theme: {
+                extend: {
+                    // Puedes extender tu tema aquí si es necesario
+                    colors: {
+                        // Definir colores personalizados si son necesarios y no están en la paleta de Tailwind
+                        'accent-gold': '#ffeba7', 
+                        'accent-gold-dark': '#e0c26b', 
+                        'dark-bg-body': '#1a1b25', 
+                        'dark-bg-card': '#2a2b38', 
+                        'dark-bg-field': '#1f2029', 
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Desde Uiverse.io by alexruix - Adaptado y mejorado para responsividad */
+        /* Configuración de fuente Inter para una apariencia moderna y consistente */
         body {
-            font-family: Arial, sans-serif;
-            /* Fondo oscuro para toda la página */
-            background-color: #1a1b25; /* Un tono oscuro diferente al del card */
-            color: #f5f5f5; /* Color de texto claro para el body */
-            display: flex; /* Usar flexbox para centrar */
-            justify-content: center; /* Centrar horizontalmente */
-            align-items: center; /* Centrar verticalmente */
-            min-height: 100vh; /* Altura mínima del viewport */
-            margin: 0; /* Eliminar margen por defecto */
-            padding: 20px; /* Añadir un poco de padding general */
-            box-sizing: border-box; /* Incluir padding y borde en el tamaño total */
+            font-family: 'Inter', sans-serif;
+            /* Transición suave para los cambios de modo oscuro/claro */
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .card {
-            /* width: 190px; /* Eliminamos o ajustamos este ancho fijo */
-            padding: 1.9rem 1.2rem;
-            text-align: center;
-            background: #2a2b38; /* Fondo oscuro del card */
-            border-radius: 8px; /* Añadido un border-radius para suavizar esquinas */
-            box-shadow: 0 8px 24px 0 rgb(0 0 0 / 30%); /* Ajustada sombra para fondo oscuro */
-            max-width: 400px; /* Máximo ancho del card */
-            width: 90%; /* El card ocupará el 90% del ancho disponible en pantallas pequeñas */
-            box-sizing: border-box; /* Asegura que padding no afecte el ancho */
+        /* Estilo para el interruptor de modo oscuro - REUTILIZADO DEL GENERADOR DE COTIZACIONES */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px; /* Ancho del interruptor */
+            height: 24px; /* Alto del interruptor */
+            border-radius: 9999px; /* Bordes completamente redondeados */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            background-color: #D1D5DB; /* bg-gray-300 en modo claro */
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra interna */
         }
-
-        /*Inputs*/
-        .field {
-            margin-top: .5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: .5em;
-            background-color: #1f2029;
-            border-radius: 4px;
-            padding: .5em 1em;
-            margin-bottom: 15px; /* Espacio entre campos */
+        .toggle-switch.dark {
+            background-color: #4A5568; /* bg-gray-600 en modo oscuro */
         }
-
+        .toggle-switch-circle {
+            position: absolute;
+            left: 4px; /* Posición inicial del círculo */
+            top: 4px; /* Posición inicial del círculo */
+            width: 16px; /* Ancho del círculo */
+            height: 16px; /* Alto del círculo */
+            background-color: white;
+            border-radius: 9999px; /* Círculo completamente redondeado */
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra del círculo */
+        }
+        .toggle-switch.dark .toggle-switch-circle {
+            transform: translateX(24px); /* Mueve el círculo a la derecha en modo oscuro */
+        }
+        
+        /* Ajustes específicos para los iconos dentro de los campos de entrada */
         .input-icon {
             height: 1em;
             width: 1em;
-            fill: #ffeba7;
-            flex-shrink: 0; /* Evita que el ícono se encoja */
+            fill: currentColor; /* Usa el color de texto actual para el SVG */
+            flex-shrink: 0;
+            @apply text-blue-500 dark:text-blue-300; /* Color del icono, similar al acento del generador de cotizaciones */
         }
 
-        .input-field {
-            background: none;
-            border: none;
-            outline: none;
-            width: 100%;
-            color: #d3d3d3; /* Color de texto para los inputs */
-            font-size: 1em; /* Asegura un tamaño de fuente legible */
-            line-height: 1.5; /* Espacio entre líneas */
-        }
-
-        /* Placeholder color */
+        /* Ajuste para el placeholder */
         .input-field::placeholder {
-            color: #a0a0a0; /* Color más claro para el placeholder */
-            opacity: 1; /* Asegura que el placeholder sea visible */
+            @apply text-gray-500 dark:text-gray-400; /* Color de placeholder consistente */
+            opacity: 1; 
         }
-
-        /*Text*/
-        .title {
-            margin-bottom: 1.5rem; /* Más espacio después del título */
-            font-size: 1.5em;
-            font-weight: 500;
-            color: #f5f5f5; /* Color del título */
-            text-align: center; /* Centrar el título */
-        }
-
-        /*Buttons*/
-        .btn {
-            margin: 1rem auto; /* Centrar el botón */
-            display: block; /* Hace que el botón ocupe su propia línea */
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: .8em;
-            text-transform: uppercase;
-            padding: 0.6em 1.2em;
-            background-color: #ffeba7;
-            color: #5e6681;
-            box-shadow: 0 8px 24px 0 rgb(255 235 167 / 20%);
-            transition: all .3s ease-in-out;
-            width: 100%; /* Hace que el botón ocupe todo el ancho */
-            cursor: pointer; /* Indica que es interactivo */
-        }
-
-        .btn-link {
-            color: #f5f5f5; /* Color del enlace */
-            display: block;
-            font-size: .75em;
-            transition: color .3s ease-out;
-            text-decoration: none; /* Quitar subrayado por defecto */
-            margin-top: 1rem; /* Espacio encima del enlace */
-        }
-
-        /*Hover & focus*/
-        .field input:focus::placeholder {
+        .input-field:focus::placeholder {
             opacity: 0;
             transition: opacity .3s;
         }
 
-        .btn:hover {
-            background-color: #5e6681;
-            color: #ffeba7;
-            box-shadow: 0 8px 24px 0 rgb(16 39 112 / 20%);
-        }
-
-        .btn-link:hover {
-            color: #ffeba7;
-        }
-
-        /* Media Query básica para móviles */
-        @media (max-width: 480px) {
-            .card {
-                padding: 1.5rem 1rem; /* Reducir padding en pantallas muy pequeñas */
-            }
-
-            .title {
-                font-size: 1.3em; /* Ajustar tamaño del título */
-            }
-
-            .btn {
-                font-size: .7em; /* Ajustar tamaño del botón */
-                padding: 0.8em 1em;
-            }
-
-            .btn-link {
-                 font-size: .7em; /* Ajustar tamaño del enlace */
-            }
+        /* Estilo para el icono de alternar visibilidad de contraseña */
+        .toggle-password-icon {
+            cursor: pointer;
+            @apply text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-200 ease-in-out;
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ease-in-out">
 
-<div class="card">
-    <h4 class="title">Iniciar sesión</h4>
-    <form action="/login" method="POST">
-        <div class="field">
-            <svg class="input-icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-                <path d="M207.8 20.73c-93.45 18.32-168.7 93.66-187 187.1c-27.64 140.9 68.65 266.2 199.1 285.1c19.01 2.888 36.17-12.26 36.17-31.49l.0001-.6631c0-15.74-11.44-28.88-26.84-31.24c-84.35-12.98-149.2-86.13-149.2-174.2c0-102.9 88.61-185.5 193.4-175.4c91.54 8.869 158.6 91.25 158.6 183.2l0 16.16c0 22.09-17.94 40.05-40 40.05s-40.01-17.96-40.01-40.05v-120.1c0-8.847-7.161-16.02-16.01-16.02l-31.98 .0036c-7.299 0-13.2 4.992-15.12 11.68c-24.85-12.15-54.24-16.38-86.06-5.106c-38.75 13.73-68.12 48.91-73.72 89.64c-9.483 69.01 43.81 128 110.9 128c26.44 0 50.43-9.544 69.59-24.88c24 31.3 65.23 48.69 109.4 37.49C465.2 369.3 496 324.1 495.1 277.2V256.3C495.1 107.1 361.2-9.332 207.8 20.73zM239.1 304.3c-26.47 0-48-21.56-48-48.05s21.53-48.05 48-48.05s48 21.56 48 48.05S266.5 304.3 239.1 304.3z"></path>
-            </svg>
-            <input type="text" id="username" name="username" required placeholder="Ingrese su usuario" class="input-field">
+    <div class="card bg-white dark:bg-gray-800 p-6 md:p-10 rounded-lg shadow-xl w-full max-w-sm transition-colors duration-300 ease-in-out relative">
+        <div class="absolute top-4 right-4 flex items-center space-x-2">
+            <span class="text-gray-700 dark:text-gray-300 text-sm font-semibold">Modo Oscuro</span>
+            <div id="darkModeToggle" class="toggle-switch" onclick="toggleDarkMode()">
+                <div class="toggle-switch-circle"></div>
+            </div>
         </div>
 
-        <div class="field">
-             <svg class="input-icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-                <path d="M80 192V144C80 64.47 144.5 0 224 0C303.5 0 368 64.47 368 144V192H384C419.3 192 448 220.7 448 256V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V256C0 220.7 28.65 192 64 192H80zM144 192H304V144C304 99.82 268.2 64 224 64C179.8 64 144 99.82 144 144V192z"></path>
-            </svg>
-            <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña" class="input-field">
-        </div>
+        <h4 class="title text-2xl font-semibold text-blue-800 dark:text-blue-300 mt-6 mb-8 transition-colors duration-300 ease-in-out">Iniciar sesión</h4>
+        
+        <form action="/login" method="POST" class="space-y-6">
+            <div class="field flex items-center gap-2 bg-gray-200 dark:bg-gray-700 rounded-md py-3 px-4 transition-colors duration-300 ease-in-out">
+                <svg class="input-icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M207.8 20.73c-93.45 18.32-168.7 93.66-187 187.1c-27.64 140.9 68.65 266.2 199.1 285.1c19.01 2.888 36.17-12.26 36.17-31.49l.0001-.6631c0-15.74-11.44-28.88-26.84-31.24c-84.35-12.98-149.2-86.13-149.2-174.2c0-102.9 88.61-185.5 193.4-175.4c91.54 8.869 158.6 91.25 158.6 183.2l0 16.16c0 22.09-17.94 40.05-40 40.05s-40.01-17.96-40.01-40.05v-120.1c0-8.847-7.161-16.02-16.01-16.02l-31.98 .0036c-7.299 0-13.2 4.992-15.12 11.68c-24.85-12.15-54.24-16.38-86.06-5.106c-38.75 13.73-68.12 48.91-73.72 89.64c-9.483 69.01 43.81 128 110.9 128c26.44 0 50.43-9.544 69.59-24.88c24 31.3 65.23 48.69 109.4 37.49C465.2 369.3 496 324.1 495.1 277.2V256.3C495.1 107.1 361.2-9.332 207.8 20.73zM239.1 304.3c-26.47 0-48-21.56-48-48.05s21.53-48.05 48-48.05s48 21.56 48 48.05S266.5 304.3 239.1 304.3z"></path>
+                </svg>
+                <input type="text" id="username" name="username" required placeholder="Ingrese su usuario" 
+                       class="input-field bg-transparent border-none outline-none w-full text-gray-800 dark:text-gray-200 text-base leading-tight">
+            </div>
 
-        <button type="submit" class="btn">Iniciar sesión</button>
+            <div class="field flex items-center gap-2 bg-gray-200 dark:bg-gray-700 rounded-md py-3 px-4 transition-colors duration-300 ease-in-out">
+                <svg class="input-icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M80 192V144C80 64.47 144.5 0 224 0C303.5 0 368 64.47 368 144V192H384C419.3 192 448 220.7 448 256V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V256C0 220.7 28.65 192 64 192H80zM144 192H304V144C304 99.82 268.2 64 224 64C179.8 64 144 99.82 144 144V192z"></path>
+                </svg>
+                <input type="password" id="password" name="password" required placeholder="Ingrese su contraseña" 
+                       class="input-field bg-transparent border-none outline-none w-full text-gray-800 dark:text-gray-200 text-base leading-tight">
+                <div id="togglePassword" class="toggle-password-icon w-5 h-5" onclick="togglePasswordVisibility()">
+                    <svg id="eyeOpenSvg" class="w-full h-full" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="currentColor" d="M288 144a110.1 110.1 0 0 0-3.3 64.8c-10.8 20.3-24.8 38.8-41.4 54.8c-26.6 25.1-59.9 41.7-95.6 54.9c-2.8 1.1-4.7 3.8-4.7 6.8s1.9 5.7 4.7 6.8c35.7 13.2 68.9 29.8 95.6 54.9c16.6 16 30.6 34.5 41.4 54.8c3.3 6.2 10.9 9.9 18.7 9.9s15.4-3.7 18.7-9.9c10.8-20.3 24.8-38.8 41.4-54.8c26.6-25.1 59.9-41.7 95.6-54.9c2.8-1.1 4.7-3.8 4.7-6.8s-1.9-5.7-4.7-6.8c-35.7-13.2-68.9-29.8-95.6-54.9c-16.6-16-30.6-34.5-41.4-54.8c-3.3-6.2-10.9-9.9-18.7-9.9s-15.4 3.7-18.7 9.9zM288 320c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32zM288 0C119 0 0 119 0 288s119 288 288 288s288-119 288-288S457 0 288 0zM288 448c-88.4 0-160-71.6-160-160s71.6-160 160-160s160 71.6 160 160s-71.6 160-160 160z"></path>
+                    </svg>
+                    <svg id="eyeClosedSvg" class="w-full h-full hidden" viewBox="0 0 640 512" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="currentColor" d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L381.9 279.7c15.1-23.7 26-49.6 32.7-76.6c11.7-46.3-17.2-92.9-63.5-104.6c-46.3-11.7-92.9 17.2-104.6 63.5c-5.5 21.7-5.5 44.8 0 66.5l-32 25.1c-14.9-23.2-26.6-49.3-34.3-76.8c-11.7-46.3-17.2-92.9-63.5-104.6c-46.3-11.7-92.9 17.2-104.6 63.5c-27.6 109.1 27.6 216.5 136.7 244.1c16.3 4.1 32.7 6.1 49.1 6.1c38.7 0 76.2-12.7 107.8-36.8l32 25.1c-31.6 24.1-69.1 36.8-107.8 36.8c-17.4 0-34.8-2.1-51.1-6.1C102.5 470.9 0 363.5 0 256c0-109.1 55.2-216.5 164.3-244.1c10.4-2.6 20.8-4.2 31.2-4.2c26.6 0 52.4 5.3 76.8 15.6l32-25.1zM288 320c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32z"></path>
+                    </svg>
+                </div>
+            </div>
 
-        <a href="#" class="btn-link">¿Olvidaste tu contraseña?</a>
+            <button type="submit" 
+                    class="btn w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline transition duration-300 ease-in-out dark:bg-blue-600 dark:hover:bg-blue-700">
+                Iniciar sesión
+            </button>
 
-    </form>
-</div>
+            <a href="#" 
+               class="btn-link block text-center text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-400 text-sm font-semibold transition duration-300 ease-in-out mt-4">
+                ¿Olvidaste tu contraseña?
+            </a>
+        </form>
+    </div>
 
+    <script>
+        // Funciones del modo oscuro/claro (reutilizadas del generador de cotizaciones)
+        function toggleDarkMode() {
+            const htmlElement = document.documentElement;
+            const isDarkMode = htmlElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', isDarkMode ? 'dark' : 'light'); // Guarda la preferencia
+            updateToggleSwitch(isDarkMode); // Actualiza el estado visual del interruptor
+        }
+
+        function applyDarkMode() {
+            const savedMode = localStorage.getItem('darkMode');
+            const htmlElement = document.documentElement;
+            if (savedMode === 'dark') {
+                htmlElement.classList.add('dark');
+                updateToggleSwitch(true);
+            } else {
+                htmlElement.classList.remove('dark');
+                updateToggleSwitch(false);
+            }
+        }
+
+        function updateToggleSwitch(isDarkMode) {
+            const toggleSwitch = document.getElementById('darkModeToggle');
+            if (toggleSwitch) {
+                if (isDarkMode) {
+                    toggleSwitch.classList.add('dark');
+                } else {
+                    toggleSwitch.classList.remove('dark');
+                }
+            }
+        }
+
+        // Función para alternar la visibilidad de la contraseña
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const eyeOpenSvg = document.getElementById('eyeOpenSvg');
+            const eyeClosedSvg = document.getElementById('eyeClosedSvg');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeOpenSvg.classList.add('hidden');
+                eyeClosedSvg.classList.remove('hidden');
+            } else {
+                passwordInput.type = 'password';
+                eyeOpenSvg.classList.remove('hidden');
+                eyeClosedSvg.classList.add('hidden');
+            }
+        }
+
+        // Aplicar el modo oscuro/claro al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            applyDarkMode(); 
+        });
+    </script>
 </body>
 </html>
