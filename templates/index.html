@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" class="light"> <head>
+<html lang="es" class="light">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Cotizaciones</title>
@@ -8,14 +9,22 @@
         // Configuración de Tailwind CSS para el modo oscuro
         // Se activa el modo oscuro basándose en la presencia de la clase 'dark' en el elemento html
         tailwind.config = {
-            darkMode: 'class', 
+            darkMode: 'class',
             theme: {
                 extend: {
-                    // Puedes extender tu tema aquí si es necesario
+                    // Extiende tu tema aquí con colores personalizados para consistencia
+                    colors: {
+                        'accent-gold': '#ffeba7',
+                        'accent-gold-dark': '#e0c26b',
+                        'dark-bg-body': '#1a1b25',
+                        'dark-bg-card': '#2a2b38',
+                        'dark-bg-field': '#1f2029',
+                    }
                 }
             }
         }
     </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* Configuración de fuente Inter para una apariencia moderna */
         body {
@@ -23,14 +32,9 @@
             /* Transición suave para los cambios de modo oscuro/claro */
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        /* Asegura que los inputs dentro de la tabla tengan el ancho completo */
-        #productos input[type="text"],
-        #productos input[type="number"] {
-            @apply w-full;
-        }
+
         /* Estilo para el interruptor de modo oscuro */
         .toggle-switch {
-            /* Se aplican propiedades directas para asegurar la visibilidad del interruptor */
             position: relative;
             display: inline-block;
             width: 48px; /* Ancho del interruptor */
@@ -72,7 +76,6 @@
             
             // Muestra un mensaje si el número de documento está vacío
             if (!numero_documento) {
-                // Reemplazado alert con un modal para mejor UX
                 mostrarMensajeModal('Por favor ingrese un número de documento.');
                 return;
             }
@@ -124,21 +127,65 @@
             });
         }
 
+        // Función para limpiar y parsear números, reemplazando comas por puntos
+        function parseAndCleanNumber(value) {
+            if (typeof value === 'string') {
+                return parseFloat(value.replace(',', '.')) || 0;
+            }
+            return parseFloat(value) || 0;
+        }
+
+        // Función para calcular el total o el precio unitario
+        function calcularTotalOUnitario(event) {
+            const row = event.target.closest('tr');
+            const unidadesInput = row.querySelector('input[name="unidades[]"]');
+            const precioUnitarioInput = row.querySelector('input[name="precio_unitario[]"]');
+            const totalInput = row.querySelector('input[name="total[]"]');
+
+            let unidades = parseAndCleanNumber(unidadesInput.value);
+            let precioUnitario = parseAndCleanNumber(precioUnitarioInput.value);
+            let total = parseAndCleanNumber(totalInput.value);
+
+            // Determinar qué campo fue el último en ser modificado
+            if (event.target === unidadesInput || event.target === precioUnitarioInput) {
+                // Si Unidades o Precio Unitario cambian, recalcular Total
+                if (unidades > 0 && precioUnitario >= 0) {
+                    totalInput.value = (unidades * precioUnitario).toFixed(2);
+                } else if (unidades === 0 && precioUnitario >= 0) {
+                    totalInput.value = ''; // Si unidades es 0, el total se deja vacío
+                }
+            } else if (event.target === totalInput) {
+                // Si Total cambia, recalcular Precio Unitario
+                if (unidades > 0 && total >= 0) {
+                    precioUnitarioInput.value = (total / unidades).toFixed(2);
+                } else if (unidades === 0 && total >= 0) {
+                    precioUnitarioInput.value = ''; // Si unidades es 0, el precio unitario se deja vacío
+                }
+            }
+        }
+
         // Función para agregar una nueva fila de producto a la tabla
         function agregarProducto() {
             const tabla = document.getElementById('productos').getElementsByTagName('tbody')[0];
             const nuevaFila = tabla.insertRow();
             
-            // Inserta el HTML para los inputs de descripción, unidades y total, y el botón de eliminar
+            // Inserta el HTML para los inputs de descripción, unidades, precio unitario, total y el botón de eliminar
             nuevaFila.innerHTML = `
                 <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
-                    <input type="text" name="descripcion[]" required oninput="convertirAMayusculas(event)" class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                    <input type="text" name="descripcion[]" required oninput="convertirAMayusculas(event)"
+                           class="w-full shadow appearance-none border rounded-md py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-bg-field border-gray-300 dark:border-gray-600">
                 </td>
                 <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
-                    <input type="number" name="unidades[]" min="1" required class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                    <input type="number" name="unidades[]" min="1" required value="1" oninput="calcularTotalOUnitario(event)"
+                           class="w-full shadow appearance-none border rounded-md py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-bg-field border-gray-300 dark:border-gray-600">
                 </td>
                 <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
-                    <input type="number" name="total[]" step="0.01" min="0" required class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                    <input type="text" name="precio_unitario[]" value="" required oninput="calcularTotalOUnitario(event)"
+                           class="w-full shadow appearance-none border rounded-md py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-bg-field border-gray-300 dark:border-gray-600">
+                </td>
+                <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
+                    <input type="text" name="total[]" value="" required oninput="calcularTotalOUnitario(event)"
+                           class="w-full shadow appearance-none border rounded-md py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-bg-field border-gray-300 dark:border-gray-600">
                 </td>
                 <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
                     <button type="button" onclick="eliminarFila(this)" class="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-2 rounded-md transition duration-300 ease-in-out">Eliminar</button>
@@ -167,6 +214,28 @@
             // Valida que se haya agregado al menos un producto
             if (filas.length < 1) {
                 mostrarMensajeModal('Debe agregar al menos un producto.');
+                return false;
+            }
+
+            // Validar que todos los campos de producto estén completos y sean válidos
+            let allProductsValid = true;
+            filas.forEach(row => {
+                const descripcion = row.querySelector('input[name="descripcion[]"]').value.trim();
+                const unidades = parseAndCleanNumber(row.querySelector('input[name="unidades[]"]').value);
+                const precioUnitario = parseAndCleanNumber(row.querySelector('input[name="precio_unitario[]"]').value);
+                const total = parseAndCleanNumber(row.querySelector('input[name="total[]"]').value);
+
+                // Si la descripción está vacía O unidades no es un número válido O unidades es <= 0
+                // O precioUnitario no es un número válido O precioUnitario es < 0
+                // O total no es un número válido O total es < 0
+                // Y si el campo no está vacío, debe ser un número válido.
+                if (!descripcion || isNaN(unidades) || unidades <= 0 || isNaN(precioUnitario) || precioUnitario < 0 || isNaN(total) || total < 0) {
+                    allProductsValid = false;
+                }
+            });
+
+            if (!allProductsValid) {
+                mostrarMensajeModal('Por favor, complete todos los campos de los productos correctamente (descripción, unidades > 0, precio unitario >= 0, total >= 0).');
                 return false;
             }
             
@@ -246,6 +315,7 @@
         // Event listener para cuando el DOM esté completamente cargado
         document.addEventListener('DOMContentLoaded', function() {
             applyDarkMode(); // Aplica el modo oscuro/claro guardado al cargar la página
+            agregarProducto(); // Agrega una fila de producto inicial al cargar la página
 
             // Event listener para el envío del formulario de cotización
             document.getElementById('cotizacionForm').addEventListener('submit', function(event) {
@@ -323,8 +393,8 @@
         });
     </script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ease-in-out">
-    <div class="bg-white dark:bg-gray-800 p-6 md:p-10 rounded-lg shadow-xl w-full max-w-md lg:max-w-3xl transition-colors duration-300 ease-in-out">
+<body class="bg-gray-100 dark:bg-dark-bg-body min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ease-in-out">
+    <div class="bg-white dark:bg-dark-bg-card p-6 md:p-10 rounded-lg shadow-xl w-full max-w-md lg:max-w-4xl transition-colors duration-300 ease-in-out">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-blue-800 dark:text-blue-300 text-center flex-grow transition-colors duration-300 ease-in-out">Generador de Cotizaciones</h1>
             <div class="flex items-center space-x-2">
@@ -340,7 +410,7 @@
                 <div>
                     <label for="documento" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">DOCUMENTO:</label>
                     <select id="documento" name="documento" required
-                            class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                            class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-bg-field border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
                         <option value="DNI">DNI</option>
                         <option value="RUC">RUC</option>
                     </select>
@@ -350,7 +420,7 @@
                     <label for="nro_documento" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">NÚMERO:</label>
                     <div class="flex space-x-2">
                         <input type="text" id="nro_documento" name="nro_documento" required
-                               class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                               class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-bg-field border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
                         <button type="button" id="btnBuscar" onclick="consultarDatos()"
                                 class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-md focus:outline-none focus:shadow-outline transition duration-300 ease-in-out whitespace-nowrap dark:bg-blue-600 dark:hover:bg-blue-700">
                             Buscar Datos
@@ -362,19 +432,19 @@
             <div>
                 <label for="nombre_cliente" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">NOMBRE DEL CLIENTE:</label>
                 <input type="text" id="nombre_cliente" name="nombre_cliente" required oninput="convertirAMayusculas(event)"
-                       class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                       class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-bg-field border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
             </div>
 
             <div>
                 <label for="direccion_cliente" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">DIRECCIÓN:</label>
                 <input type="text" id="direccion_cliente" name="direccion_cliente" required oninput="convertirAMayusculas(event)"
-                       class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                       class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-bg-field border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
             </div>
 
             <div>
                 <label for="moneda" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2 transition-colors duration-300 ease-in-out">MONEDA:</label>
                 <select id="moneda" name="moneda" required
-                        class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
+                        class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-dark-bg-field border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
                     <option value="SOLES">SOLES</option>
                     <option value="DOLARES">DÓLARES</option>
                 </select>
@@ -385,31 +455,15 @@
                 <table id="productos" class="min-w-full bg-white dark:bg-gray-800 transition-colors duration-300 ease-in-out">
                     <thead>
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 rounded-tl-lg transition-colors duration-300 ease-in-out">DESCRIPCIÓN</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 transition-colors duration-300 ease-in-out">UNIDADES</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 transition-colors duration-300 ease-in-out">TOTAL</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 rounded-tr-lg transition-colors duration-300 ease-in-out">ACCIÓN</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 rounded-tl-lg transition-colors duration-300 ease-in-out w-4/12">DESCRIPCIÓN</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 transition-colors duration-300 ease-in-out w-2/12">UNIDADES</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 transition-colors duration-300 ease-in-out w-2/12">P. UNITARIO</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 transition-colors duration-300 ease-in-out w-2/12">TOTAL</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-blue-700 dark:bg-blue-900 rounded-tr-lg transition-colors duration-300 ease-in-out w-2/12">ACCIÓN</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
-                                <input type="text" name="descripcion[]" required oninput="convertirAMayusculas(event)"
-                                       class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
-                            </td>
-                            <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
-                                <input type="number" name="unidades[]" min="1" required
-                                       class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
-                            </td>
-                            <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
-                                <input type="number" name="total[]" step="0.01" min="0" required
-                                       class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out">
-                            </td>
-                            <td class="px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200">
-                                <button type="button" onclick="eliminarFila(this)" class="bg-red-600 hover:bg-red-700 text-white text-xs py-1 px-2 rounded-md transition duration-300 ease-in-out">Eliminar</button>
-                            </td>
-                        </tr>
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
 

@@ -4,7 +4,8 @@ from flask import Flask, render_template, request, jsonify, send_file, redirect,
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Spacer, Paragraph
 from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet # Importamos los estilos básicos para Paragraph
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle # Importamos los estilos básicos para Paragraph
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT # Importar para alineación de texto en PDF
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import sys
@@ -22,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__, template_folder='templates')
 load_dotenv()
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL") # Corregido de 'DATABASE_URL' a "DATABASE_URL"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -51,11 +52,10 @@ class Producto(db.Model):
     __tablename__ = 'productos_cotizacion'
 
     id = db.Column(db.Integer, primary_key=True)
-    # Eliminada la coma extra que causaba el error SQLAlchemy
     cotizacion_id = db.Column(db.Integer, db.ForeignKey('cotizacion.id'), nullable=False)
     descripcion = db.Column(db.String(200), nullable=False)
     unidades = db.Column(db.Integer, nullable=False)
-    precio_unitario = db.Column(db.Float, nullable=False)
+    precio_unitario = db.Column(db.Float, nullable=False) # Ahora se almacena
     total = db.Column(db.Float, nullable=False)
 
 
@@ -77,21 +77,15 @@ os.makedirs(PDF_DIR, exist_ok=True)
 
 COLOR_PRINCIPAL = colors.HexColor('#004aad')
 
-# La función dividir_texto ya no se llama directamente en generate_pdf_content
-# pero la mantenemos por si la usas en otro lugar o por si la quieres adaptar
-def dividir_texto(texto, max_palabras=7):
-    """
-    Divide un texto en fragmentos, asegurando que cada fragmento no supere el número máximo de palabras.
-    """
-    palabras = texto.split()
-    fragmentos = []
-
-    while palabras:
-        fragmento = ' '.join(palabras[:max_palabras])
-        fragmentos.append(fragmento)
-        palabras = palabras[max_palabras:]
-
-    return fragmentos
+# Función auxiliar para limpiar y parsear números (maneja comas como decimales)
+def parse_number_from_string(value):
+    if isinstance(value, str):
+        # Reemplaza la coma por un punto para asegurar que float() lo interprete correctamente
+        value = value.replace(',', '.')
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return 0.0 # Valor por defecto si no se puede parsear
 
 def dividir_direccion(direccion, max_palabras=9):
     """
@@ -108,7 +102,7 @@ def dividir_direccion(direccion, max_palabras=9):
     return fragmentos
 
 # --- Función para generar el contenido binario del PDF (reutilizable) ---
-def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
+def generate_pdf_content(cotizacion_obj, products_list, importe_total):
     """Genera el contenido binario de un PDF de cotización."""
     buffer = io.BytesIO()
     margen_izq = 20
@@ -214,13 +208,14 @@ def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
     data_productos = [["Descripción", "Cantidad", "P.Unit", "IGV", "Precio"]]
 
     # products_list will be the list of Producto objects passed to this function
-    for producto in productos_list:
+    for producto in products_list:
         # Usamos Paragraph para la descripción
         descripcion_texto = producto.descripcion.strip()
 
         unidad = producto.unidades
         total = producto.total
-        precio_unit = producto.precio_unitario if producto.precio_unitario is not None else (total / unidad if unidad > 0 else 0.0)
+        # Ahora precio_unitario se obtiene directamente del objeto Producto
+        precio_unit = producto.precio_unitario
         igv_producto = total * (0.18/1.18)
 
         # Crea un objeto Paragraph para la descripción
@@ -322,7 +317,7 @@ def generate_pdf_content(cotizacion_obj, productos_list, importe_total):
 
     # --- Bank Info ---
     data_banco = [
-        ["Datos para la Transferencia Beneficiario PAPELERÍA GRÁFICA Y PUBLICITARIA"],
+        ["Datos para la Transferencia Beneficiario PAPELERA GRÁFICA Y PUBLICITARIA"],
         ["Banco de la Nación"],
         ["Cuenta Detracción en Soles: 00045115666"],
         ["Banco de Crédito del Perú"],
@@ -376,10 +371,10 @@ def login():
 
 @app.route('/login', methods=['POST'])
 def login_post():
-    usuario = request.form['username']
-    contrasena = request.form['password']
+    username = request.form['username']
+    password = request.form['password']
 
-    if usuario == USUARIO and contrasena == CONTRASEÑA:
+    if username == USUARIO and password == CONTRASEÑA:
         return render_template('index.html')
     else:
         return 'Credenciales incorrectas, por favor intente de nuevo.'
@@ -449,14 +444,11 @@ def obtener_siguiente_numero_cotizacion():
 
 @app.route('/index')
 def index():
-    # Aquí puedes añadir lógica si necesitas pasar datos a index.html
-    # Por ahora, simplemente renderizamos la plantilla
     return render_template('index.html')
 
 @app.route('/generar_pdf', methods=['POST'])
 def generar_pdf():
     try:
-        # Esta ruta sigue generando un PDF a partir de un formulario HTML y guarda una NUEVA cotización
         tipo_documento = request.form['documento']
         nro_documento = request.form['nro_documento']
         nombre_cliente = request.form['nombre_cliente']
@@ -464,37 +456,46 @@ def generar_pdf():
         moneda = request.form['moneda']
 
         descripciones = request.form.getlist('descripcion[]')
-        unidades = request.form.getlist('unidades[]')
-        totales = request.form.getlist('total[]')
+        unidades_str = request.form.getlist('unidades[]')
+        precios_unitarios_str = request.form.getlist('precio_unitario[]')
+        totales_str = request.form.getlist('total[]')
 
         if not nombre_cliente or not direccion_cliente or not descripciones:
-             return jsonify({'success': False, 'error': 'Datos incompletos: Nombre, dirección o productos faltantes'}), 400
+            return jsonify({'success': False, 'error': 'Datos incompletos: Nombre, dirección o productos faltantes'}), 400
 
-        productos_para_db = [] # Lista para almacenar Producto objects para DB
-        importe_total = 0
-        for desc, unid, tot in zip(descripciones, unidades, totales):
-             try:
-                unid_int = int(float(unid))
-                tot_float = float(tot)
-                if desc.strip() and unid_int > 0 and tot_float >= 0:
-                    precio_unit = tot_float / unid_int if unid_int > 0 else 0.0
+        productos_para_db = []
+        importe_total = 0.0 # Asegurarse de que sea un flotante
+        for i in range(len(descripciones)):
+            try:
+                desc = descripciones[i].strip()
+                unid = parse_number_from_string(unidades_str[i])
+                precio_unit = parse_number_from_string(precios_unitarios_str[i])
+                tot = parse_number_from_string(totales_str[i])
+
+                if desc and unid > 0 and precio_unit >= 0 and tot >= 0:
+                    # Aquí se puede decidir si el total enviado es el maestro o si se recalcula
+                    # Para consistencia con el frontend, usaremos el total enviado
+                    # Si prefieres recalcular: tot = unid * precio_unit
+                    
                     productos_para_db.append(Producto(
-                         descripcion=desc.strip(),
-                         unidades=unid_int,
-                         precio_unitario=precio_unit,
-                         total=tot_float
+                        descripcion=desc,
+                        unidades=int(unid), # Asegurarse de que unidades sea entero
+                        precio_unitario=precio_unit,
+                        total=tot
                     ))
-                    importe_total += tot_float
-             except (ValueError, TypeError):
-                 app.logger.warning(f"Producto inválido omitido en generación: Desc: {desc}, Unid: {unid}, Tot: {tot}")
-                 continue
+                    importe_total += tot
+                else:
+                    app.logger.warning(f"Producto inválido omitido en generación: Desc: {desc}, Unid: {unid}, P.Unit: {precio_unit}, Tot: {tot}")
+                    continue
+            except (ValueError, TypeError) as e:
+                app.logger.error(f"Error al procesar producto en generar_pdf: {e}")
+                continue
 
         if not productos_para_db:
-             return jsonify({'success': False, 'error': 'No se pudieron procesar productos válidos para la cotización'}), 400
+            return jsonify({'success': False, 'error': 'No se pudieron procesar productos válidos para la cotización'}), 400
 
         numero_cotizacion = obtener_siguiente_numero_cotizacion()
 
-        # Crear la cotización en la DB *antes* de generar el PDF para obtener el ID
         nueva_cotizacion_db = Cotizacion(
             numero_cotizacion=numero_cotizacion,
             tipo_documento=tipo_documento,
@@ -502,29 +503,20 @@ def generar_pdf():
             nombre_cliente=nombre_cliente,
             direccion_cliente=direccion_cliente,
             moneda=moneda,
-            monto_total=importe_total # Monto total calculado aquí
-            # pdf_data se añadirá después de generarlo
+            monto_total=importe_total
         )
         db.session.add(nueva_cotizacion_db)
         db.session.flush() # Obtiene nueva_cotizacion_db.id
 
-        # Asignar el cotizacion_id a los productos antes de guardarlos
         for producto in productos_para_db:
             producto.cotizacion_id = nueva_cotizacion_db.id
-            db.session.add(producto) # Añadir los productos a la sesión
+            db.session.add(producto)
 
-
-        # Generar el contenido del PDF usando la nueva cotización y la lista de productos
-        # Nota: generate_pdf_content espera una lista de objetos Producto, no diccionarios
         pdf_data_binary = generate_pdf_content(nueva_cotizacion_db, productos_para_db, importe_total)
-
-        # Guardar los datos binarios del PDF en la cotización
         nueva_cotizacion_db.pdf_data = pdf_data_binary
 
-        db.session.commit() # Confirmar todos los cambios
+        db.session.commit()
 
-
-        # Devolver el PDF
         return send_file(
             io.BytesIO(pdf_data_binary),
             mimetype='application/pdf',
@@ -543,7 +535,7 @@ def generar_pdf():
 
 @app.route('/ver_cotizaciones')
 def ver_cotizaciones():
-    try: # Añadido try-except para capturar errores al cargar la página de cotizaciones
+    try:
         cotizaciones = Cotizacion.query.all()
         return render_template('ver_cotizaciones.html', cotizaciones=cotizaciones)
     except Exception as e:
@@ -554,7 +546,6 @@ def ver_cotizaciones():
 @app.route('/obtener_cotizacion/<int:cotizacion_id>')
 def obtener_cotizacion(cotizacion_id):
     try:
-        # get_or_404 lanza NotFound si la cotización no existe
         cotizacion = Cotizacion.query.get_or_404(cotizacion_id)
         productos = Producto.query.filter_by(cotizacion_id=cotizacion_id).all()
 
@@ -564,11 +555,10 @@ def obtener_cotizacion(cotizacion_id):
                 'id': producto.id,
                 'descripcion': producto.descripcion,
                 'unidades': producto.unidades,
-                'precio_unitario': producto.precio_unitario,
+                'precio_unitario': producto.precio_unitario, # Se obtiene directamente de la DB
                 'total': producto.total
             })
 
-        # Si todo va bien, devuelve JSON
         return jsonify({
             'success': True,
             'id': cotizacion.id,
@@ -580,12 +570,10 @@ def obtener_cotizacion(cotizacion_id):
             'moneda': cotizacion.moneda,
             'productos': productos_data
         })
-    except NotFound: # <--- Captura específica de la excepción NotFound
-        # Si la cotización no se encuentra, devuelve un error JSON 404
+    except NotFound:
         app.logger.warning(f"Cotización con ID {cotizacion_id} no encontrada.")
         return jsonify({'success': False, 'error': 'Cotización no encontrada'}), 404
-    except Exception as e: # <--- Captura otros errores inesperados
-        # Para cualquier otro error, devuelve un error JSON 500
+    except Exception as e:
         app.logger.error(f"Error general al obtener cotización {cotizacion_id}: {str(e)}")
         return jsonify({'success': False, 'error': 'Error interno del servidor'}), 500
 
@@ -593,107 +581,79 @@ def obtener_cotizacion(cotizacion_id):
 @app.route('/descargar_pdf/<int:cotizacion_id>')
 def descargar_pdf(cotizacion_id):
     try:
-        # get_or_404 lanza NotFound si la cotización no existe
         cotizacion = Cotizacion.query.get_or_404(cotizacion_id)
         pdf_data = cotizacion.pdf_data
 
         if pdf_data is None:
-             # Si el PDF no está en la DB, devuelve un error 404 (JSON)
-             app.logger.warning(f"PDF no disponible para cotización {cotizacion_id}.")
-             return jsonify({'success': False, 'error': 'El PDF para esta cotización no está disponible.'}), 404
+            app.logger.warning(f"PDF no disponible para cotización {cotizacion_id}.")
+            return jsonify({'success': False, 'error': 'El PDF para esta cotización no está disponible.'}), 404
 
-        # Si todo está bien, envía el archivo PDF
         return send_file(
             io.BytesIO(pdf_data),
             mimetype='application/pdf',
             as_attachment=True,
             download_name=f'cotizacion_{cotizacion.numero_cotizacion}.pdf'
         )
-    except NotFound: # <--- Captura específica si la cotización no existe
+    except NotFound:
         app.logger.warning(f"Intento de descarga de PDF para cotización {cotizacion_id} no encontrada.")
-        return jsonify({'success': False, 'error': 'Cotización para descarga no encontrada'}), 404 # Devuelve JSON 404
-    except Exception as e: # <--- Captura otros errores inesperados
+        return jsonify({'success': False, 'error': 'Cotización para descarga no encontrada'}), 404
+    except Exception as e:
         app.logger.error(f"Error general al descargar PDF para cotización {cotizacion_id}: {str(e)}")
-        return jsonify({'success': False, 'error': 'Error interno del servidor al descargar PDF'}), 500 # Devuelve JSON 500
+        return jsonify({'success': False, 'error': 'Error interno del servidor al descargar PDF'}), 500
 
 
-# --- Definición corregida y ÚNICA de actualizar_cotizacion con regeneración de PDF ---
 @app.route('/actualizar_cotizacion/<int:cotizacion_id>', methods=['POST'])
 def actualizar_cotizacion(cotizacion_id):
     try:
         data = request.get_json()
         cotizacion = Cotizacion.query.get_or_404(cotizacion_id)
 
-        # Actualizar datos básicos de la cotización
         cotizacion.nombre_cliente = data.get('nombre_cliente', cotizacion.nombre_cliente)
         cotizacion.tipo_documento = data.get('tipo_documento', cotizacion.tipo_documento)
         cotizacion.nro_documento = data.get('nro_documento', cotizacion.nro_documento)
         cotizacion.direccion_cliente = data.get('direccion', cotizacion.direccion_cliente)
         cotizacion.moneda = data.get('moneda', cotizacion.moneda)
 
-        # --- Procesar y actualizar productos ---
-        productos_enviados = data.get('productos', [])
-
         # Eliminar productos existentes asociados a esta cotización
-        # Esto es seguro porque el cascade 'all, delete-orphan' en Cotizacion.productos
-        # asegura que los objetos Producto se eliminen de la sesión cuando se borran
-        # las referencias, PERO delete() es más eficiente para borrar en masa
         Producto.query.filter_by(cotizacion_id=cotizacion_id).delete()
 
-        monto_total = 0
-        productos_para_db = [] # Lista para almacenar los NUEVOS objetos Producto para la DB
-        # Agregar los nuevos productos (o los productos modificados enviados)
-        for producto_data in productos_enviados:
-             try:
+        monto_total = 0.0 # Asegurarse de que sea un flotante
+        productos_para_db = []
+        for producto_data in data.get('productos', []):
+            try:
                 descripcion = producto_data.get('descripcion', '').strip()
-                unidades_val = producto_data.get('unidades', 0)
-                total_val = producto_data.get('total', 0)
+                unidades = parse_number_from_string(producto_data.get('unidades', 0))
+                precio_unitario = parse_number_from_string(producto_data.get('precio_unitario', 0.0))
+                total = parse_number_from_string(producto_data.get('total', 0.0))
 
-                # Convertir unidades a int y total a float con manejo de errores
-                unidades = int(float(unidades_val)) if unidades_val is not None else 0
-                total = float(total_val) if total_val is not None else 0.0
-
-
-                if descripcion and unidades > 0 and total >= 0:
-                    precio_unitario = total / unidades if unidades > 0 else 0.0
-                    # Crear una NUEVA instancia de Producto para la base de datos
+                if descripcion and unidades > 0 and precio_unitario >= 0 and total >= 0:
                     productos_para_db.append(Producto(
-                         cotizacion_id=cotizacion_id, # Asegurar la relación
-                         descripcion=descripcion,
-                         unidades=unidades,
-                         precio_unitario=precio_unitario,
-                         total=total
+                        cotizacion_id=cotizacion_id,
+                        descripcion=descripcion,
+                        unidades=int(unidades), # Asegurarse de que unidades sea entero
+                        precio_unitario=precio_unitario,
+                        total=total
                     ))
                     monto_total += total
                 else:
-                     app.logger.warning(f"Producto inválido omitido en actualización (datos recibidos): {producto_data}")
+                    app.logger.warning(f"Producto inválido omitido en actualización (datos recibidos): {producto_data}")
 
-             except (ValueError, TypeError) as e:
-                 app.logger.error(f"Error al procesar producto {producto_data} para cotización {cotizacion_id}: {str(e)}")
-                 # Continuar con el siguiente producto
+            except (ValueError, TypeError) as e:
+                app.logger.error(f"Error al procesar producto {producto_data} para cotización {cotizacion_id}: {str(e)}")
 
-        # Añadir los nuevos objetos Producto a la sesión
         db.session.add_all(productos_para_db)
-
-        # Actualizar el monto total de la cotización basado en los productos enviados
         cotizacion.monto_total = monto_total
 
-        # --- Regenerar PDF con datos actualizados ---
-        # Llama a la función auxiliar con el objeto cotización actualizado
-        # y la lista de objetos Producto recién creados/procesados
         updated_pdf_data = generate_pdf_content(cotizacion, productos_para_db, cotizacion.monto_total)
-
-        # Guardar los datos binarios del PDF actualizado en la cotización
         cotizacion.pdf_data = updated_pdf_data
 
-        db.session.commit() # Confirmar todos los cambios
+        db.session.commit()
 
         return jsonify({'success': True, 'message': 'Cotización actualizada correctamente. PDF regenerado.'})
 
     except Exception as e:
-        db.session.rollback() # Deshacer cambios si ocurre un error
+        db.session.rollback()
         app.logger.error(f'Error general al actualizar cotización {cotizacion_id} incluyendo PDF: {str(e)}')
-        # Devolver un mensaje de error más descriptivo para el frontend si es posible
         return jsonify({'success': False, 'error': f'Error al actualizar cotización y regenerar PDF: {str(e)}'}), 500
 
 
@@ -723,12 +683,7 @@ if __name__ == '__main__':
             # Si NO usas migraciones, descomenta la línea de abajo:
             # db.create_all()
             print("Verificando/inicializando la base de datos...")
-            # Puedes añadir lógica aquí para verificar si las tablas existen
-            # Si usas migraciones, confías en que 'flask db upgrade' lo hizo.
-
         except Exception as e:
             app.logger.error(f"Error al inicializar la base de datos en el startup: {str(e)}")
-            # Dependiendo de si la DB es esencial para iniciar, podrías querer salir o continuar
-            # sys.exit(1) # Descomentar para salir si la DB es esencial
 
     app.run(debug=True)

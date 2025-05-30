@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" class="light"> <head>
+<html lang="es" class="light">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ver Cotizaciones</title>
@@ -7,15 +8,15 @@
     <script>
         // Configuración de Tailwind CSS para el modo oscuro
         tailwind.config = {
-            darkMode: 'class', 
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        'accent-gold': '#ffeba7', 
-                        'accent-gold-dark': '#e0c26b', 
-                        'dark-bg-body': '#1a1b25', 
-                        'dark-bg-card': '#2a2b38', 
-                        'dark-bg-field': '#1f2029', 
+                        'accent-gold': '#ffeba7',
+                        'accent-gold-dark': '#e0c26b',
+                        'dark-bg-body': '#1a1b25',
+                        'dark-bg-card': '#2a2b38',
+                        'dark-bg-field': '#1f2029',
                     }
                 }
             }
@@ -89,9 +90,9 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ease-in-out">
+<body class="bg-gray-100 dark:bg-dark-bg-body min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ease-in-out">
 
-    <div class="card bg-white dark:bg-gray-800 p-6 md:p-10 rounded-lg shadow-xl w-full max-w-7xl transition-colors duration-300 ease-in-out relative">
+    <div class="card bg-white dark:bg-dark-bg-card p-6 md:p-10 rounded-lg shadow-xl w-full max-w-7xl transition-colors duration-300 ease-in-out relative">
         <div class="absolute top-4 right-4 flex items-center space-x-2">
             <span class="text-gray-700 dark:text-gray-300 text-sm font-semibold">Modo Oscuro</span>
             <div id="darkModeToggle" class="toggle-switch" onclick="toggleDarkMode()">
@@ -156,7 +157,7 @@
     </div>
 
     <div id="modalEdicion" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="modal-contenido bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-1/2 max-w-2xl relative transition-colors duration-300 ease-in-out max-h-[90vh] overflow-y-auto">
+        <div class="modal-contenido bg-white dark:bg-dark-bg-card p-6 rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-1/2 max-w-2xl relative transition-colors duration-300 ease-in-out max-h-[90vh] overflow-y-auto">
             <span class="cerrar absolute top-3 right-5 text-gray-500 dark:text-gray-400 text-3xl font-bold cursor-pointer hover:text-gray-700 dark:hover:text-gray-200" onclick="cerrarModal()">&times;</span>
             <h2 class="text-xl font-semibold text-blue-800 dark:text-blue-300 mb-6 mt-4">Editar Cotización <span id="numero-cotizacion"></span></h2>
             <form id="formEdicion">
@@ -164,12 +165,12 @@
 
                 <div class="form-group mb-4">
                     <label for="edit-nombre" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Nombre del Cliente:</label>
-                    <input type="text" id="edit-nombre" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                    <input type="text" id="edit-nombre" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                 </div>
 
                 <div class="form-group mb-4">
                     <label for="edit-documento" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Tipo de Documento:</label>
-                    <select id="edit-documento" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                    <select id="edit-documento" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                         <option value="DNI">DNI</option>
                         <option value="RUC">RUC</option>
                     </select>
@@ -177,17 +178,17 @@
 
                 <div class="form-group mb-4">
                     <label for="edit-numero" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Número de Documento:</label>
-                    <input type="text" id="edit-numero" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                    <input type="text" id="edit-numero" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                 </div>
 
                 <div class="form-group mb-4">
                     <label for="edit-direccion" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Dirección:</label>
-                    <textarea id="edit-direccion" required class="w-full p-2 border rounded-md min-h-[100px] resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"></textarea>
+                    <textarea id="edit-direccion" required class="w-full p-2 border rounded-md min-h-[100px] resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"></textarea>
                 </div>
 
                 <div class="form-group mb-4">
                     <label for="edit-moneda" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Moneda:</label>
-                    <select id="edit-moneda" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                    <select id="edit-moneda" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                         <option value="SOLES">Soles</option>
                         <option value="DOLARES">Dólares</option>
                     </select>
@@ -195,7 +196,7 @@
 
                 <div id="productos-container" class="mb-4">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Productos</h3>
-                </div>
+                    </div>
 
                 <button type="button" class="btn bg-blue-700 hover:bg-blue-800 text-white dark:bg-blue-600 dark:hover:bg-blue-700 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300 ease-in-out" onclick="agregarProductoEdicion()">
                     + Agregar Producto
@@ -289,7 +290,7 @@
                 modalConfirm.id = 'modalConfirm';
                 modalConfirm.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-50';
                 modalConfirm.innerHTML = `
-                    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto transition-colors duration-300 ease-in-out">
+                    <div class="bg-white dark:bg-dark-bg-card p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto transition-colors duration-300 ease-in-out">
                         <p class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">¿Estás seguro de eliminar esta cotización? Esta acción no se puede deshacer.</p>
                         <div class="flex justify-center gap-4">
                             <button id="confirmBtnYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">Sí, eliminar</button>
@@ -358,6 +359,43 @@
             }
         }
 
+        // Función para limpiar y parsear números, reemplazando comas por puntos
+        function parseAndCleanNumber(value) {
+            if (typeof value === 'string') {
+                return parseFloat(value.replace(',', '.')) || 0;
+            }
+            return parseFloat(value) || 0;
+        }
+
+        // Función para calcular el total o el precio unitario en el modal de edición
+        function calcularTotalOUnitarioEdicion(event) {
+            const productoDiv = event.target.closest('.producto-edicion');
+            const unidadesInput = productoDiv.querySelector('input[name="edit-unidades[]"]');
+            const precioUnitarioInput = productoDiv.querySelector('input[name="edit-precio-unitario[]"]');
+            const totalInput = productoDiv.querySelector('input[name="edit-total[]"]');
+
+            let unidades = parseAndCleanNumber(unidadesInput.value);
+            let precioUnitario = parseAndCleanNumber(precioUnitarioInput.value);
+            let total = parseAndCleanNumber(totalInput.value);
+
+            if (event.target === unidadesInput || event.target === precioUnitarioInput) {
+                // Si Unidades o Precio Unitario cambian, recalcular Total
+                if (unidades > 0 && precioUnitario >= 0) {
+                    totalInput.value = (unidades * precioUnitario).toFixed(2);
+                } else if (unidades === 0 && precioUnitario >= 0) {
+                    totalInput.value = '0.00';
+                }
+            } else if (event.target === totalInput) {
+                // Si Total cambia, recalcular Precio Unitario
+                if (unidades > 0 && total >= 0) {
+                    precioUnitarioInput.value = (total / unidades).toFixed(2);
+                } else if (unidades === 0 && total >= 0) {
+                    precioUnitarioInput.value = '0.00';
+                }
+            }
+        }
+
+
         async function mostrarModalEdicion(cotizacionId) {
             try {
                 mostrarSpinner(true, 'Cargando cotización...');
@@ -403,9 +441,16 @@
 
             const productoDiv = document.createElement("div");
             // Aplicar clases de Tailwind para el estilo del div de producto en el modal de edición
-            productoDiv.className = "producto-edicion mb-4 p-4 border rounded-md bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out"; 
+            productoDiv.className = "producto-edicion mb-4 p-4 border rounded-md bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 transition-colors duration-300 ease-in-out";
             
             const productoId = producto && producto.id ? producto.id : `new-${Date.now()}`;
+
+            // Formatear los valores numéricos con punto decimal para la visualización
+            const unidadesValue = producto ? producto.unidades : '1';
+            // Cambiado a type="text" para forzar el punto decimal
+            const precioUnitarioValue = producto && producto.precio_unitario !== null ? parseFloat(producto.precio_unitario).toFixed(2) : '0.00';
+            const totalValue = producto ? parseFloat(producto.total).toFixed(2) : '0.00';
+
 
             productoDiv.innerHTML = `
                 <div class="flex justify-between items-center mb-2">
@@ -417,19 +462,24 @@
                 </div>
                 <div class="form-group mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Descripción:</label>
-                    <input type="text" name="edit-descripcion[]" value="${producto ? producto.descripcion : ''}" required
-                           class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                    <input type="text" name="edit-descripcion[]" value="${producto ? producto.descripcion : ''}" required oninput="convertirAMayusculas(event)"
+                           class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="form-group mb-2">
                         <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Unidades:</label>
-                        <input type="number" name="edit-unidades[]" min="1" value="${producto ? producto.unidades : '1'}" required
-                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                        <input type="number" name="edit-unidades[]" min="1" value="${unidadesValue}" required oninput="calcularTotalOUnitarioEdicion(event)"
+                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">P. Unitario:</label>
+                        <input type="text" name="edit-precio-unitario[]" value="${precioUnitarioValue}" required oninput="calcularTotalOUnitarioEdicion(event)"
+                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                     </div>
                     <div class="form-group mb-2">
                         <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total:</label>
-                        <input type="number" name="edit-total[]" step="0.01" min="0" value="${producto ? producto.total : '0'}" required
-                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                        <input type="text" name="edit-total[]" value="${totalValue}" required oninput="calcularTotalOUnitarioEdicion(event)"
+                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                     </div>
                 </div>
                 <input type="hidden" name="edit-producto-id[]" value="${productoId}">
@@ -440,14 +490,14 @@
 
         function eliminarProductoEdicion(boton) {
             const productosDivs = document.querySelectorAll('.producto-edicion');
-             if (productosDivs.length > 1) {
+            if (productosDivs.length > 1) {
                 // Reemplazar confirm() con un modal personalizado para consistencia
                 const confirmDeleteProduct = new Promise(resolve => {
                     const modalConfirmProduct = document.createElement('div');
                     modalConfirmProduct.id = 'modalConfirmProduct';
                     modalConfirmProduct.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-50';
                     modalConfirmProduct.innerHTML = `
-                        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto transition-colors duration-300 ease-in-out">
+                        <div class="bg-white dark:bg-dark-bg-card p-8 rounded-lg shadow-xl text-center max-w-sm mx-auto transition-colors duration-300 ease-in-out">
                             <p class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">¿Eliminar este producto?</p>
                             <div class="flex justify-center gap-4">
                                 <button id="confirmProductBtnYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">Sí, eliminar</button>
@@ -473,7 +523,7 @@
                     }
                 });
             } else {
-                 mostrarMensaje('error', 'Debe haber al menos un producto en la cotización.');
+                mostrarMensaje('error', 'Debe haber al menos un producto en la cotización.');
             }
         }
 
@@ -503,36 +553,25 @@
             productosDivs.forEach(div => {
                 const descripcionInput = div.querySelector('input[name="edit-descripcion[]"]');
                 const unidadesInput = div.querySelector('input[name="edit-unidades[]"]');
+                const precioUnitarioInput = div.querySelector('input[name="edit-precio-unitario[]"]'); // Get new input
                 const totalInput = div.querySelector('input[name="edit-total[]"]');
                 const productoIdInput = div.querySelector('input[name="edit-producto-id[]"]');
 
                 const descripcion = descripcionInput.value.trim();
-                const unidades = parseInt(unidadesInput.value);
-                const total = parseFloat(totalInput.value);
+                const unidades = parseAndCleanNumber(unidadesInput.value);
+                const precioUnitario = parseAndCleanNumber(precioUnitarioInput.value); // Parse new input
+                const total = parseAndCleanNumber(totalInput.value);
                 const productoId = productoIdInput.value;
 
-                if (descripcion && !isNaN(unidades) && unidades > 0 && !isNaN(total) && total >= 0) {
-                    formData.productos.push({
-                        id: productoId.startsWith('new-') ? null : productoId, // Si es nuevo, no enviar ID
-                        descripcion: descripcion,
-                        unidades: unidades,
-                        total: total
-                    });
-                } else {
+                if (!descripcion || isNaN(unidades) || unidades <= 0 || isNaN(precioUnitario) || precioUnitario < 0 || isNaN(total) || total < 0) {
                     allProductsValid = false;
                 }
             });
 
             if (!allProductsValid) {
-                mostrarMensaje('error', 'Por favor, complete todos los campos de los productos correctamente (descripción, unidades > 0, total >= 0).');
+                mostrarMensaje('error', 'Por favor, complete todos los campos de los productos correctamente (descripción, unidades > 0, precio unitario >= 0, total >= 0).');
                 mostrarSpinner(false);
                 return;
-            }
-
-            if (formData.productos.length === 0) {
-                 mostrarMensaje('error', 'No se pudieron validar los datos de los productos. Revise los campos.');
-                 mostrarSpinner(false);
-                 return;
             }
 
             try {
@@ -540,12 +579,12 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     body: JSON.stringify(formData)
                 });
 
                 const data = await response.json();
+                mostrarSpinner(false);
 
                 if (!response.ok) {
                     const errorMsg = data.error || 'Error desconocido al actualizar';
@@ -553,12 +592,10 @@
                 }
 
                 if (data.success) {
-                    mostrarSpinner(true, "¡Listo!");
-                    setTimeout(() => {
-                        mostrarSpinner(false);
-                        cerrarModal();
-                        location.reload(); // Recarga la página para ver los cambios
-                    }, 2000);
+                    mostrarMensaje('exito', data.message);
+                    cerrarModal();
+                    // Recargar la página o actualizar la fila en la tabla principal si es necesario
+                    location.reload(); // Simple reload for now to reflect changes
                 } else {
                     throw new Error(data.error || 'Error al procesar la solicitud en el servidor');
                 }
@@ -569,9 +606,8 @@
             }
         });
 
-        // Aplicar el modo oscuro/claro al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
-            applyDarkMode(); 
+            applyDarkMode(); // Aplica el modo oscuro/claro guardado al cargar la página
         });
     </script>
 </body>
