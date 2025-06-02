@@ -317,27 +317,35 @@ def generate_pdf_content(cotizacion_obj, products_list, importe_total):
 
     # --- Bank Info ---
     data_banco = [
-        ["Datos para la Transferencia Beneficiario PAPELERA GRÁFICA Y PUBLICITARIA"],
+        ["TODO TRABAJO SE REALIZA CON EL 50% DE ADELANTO"],
+        ["LOS PRECIOS NO INCLUYEN ENVIOS"],
+        ["Datos para la Transferencia Beneficiario PAPELERIA GRÁFICA Y PUBLICITARIA"],
         ["Banco de la Nación"],
-        ["Cuenta Detracción en Soles: 00045115666"],
+        ["Cuenta Detracción en Soles: 00045115666 CCI: 01804500004511566655"],
         ["Banco de Crédito del Perú"],
         ["Cta Ahorro en Soles: 1919870450013 CCI: 00219100987045001355"]
     ]
     tabla_banco = Table(data_banco, colWidths=[ ancho_total * 1 ])
     tabla_banco.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('FONTNAME', (0, 0), (-1, 1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, 1), 10),
-        ('FONTNAME', (0, 0), (0, 1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (0, 1), 10),
-        ('FONTNAME', (0, 3), (0, 3), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 3), (0, 3), 10),
-        ('LEFTPADDING', (0, 0), (-1, -1), 3),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 3),
-        ('TOPPADDING', (0, 0), (-1, -1), 3),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-    ]))
+    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ('LEFTPADDING', (0, 0), (-1, -1), 3),
+    ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+    ('TOPPADDING', (0, 0), (-1, -1), 3),
+    ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+    ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+    ('FONTSIZE', (0, 0), (0, 0), 10),
+    ('TEXTCOLOR', (0, 0), (0, 0), colors.red),
+    ('FONTNAME', (0, 1), (0, 1), 'Helvetica-Bold'),
+    ('FONTSIZE', (0, 1), (0, 1), 10),
+    ('TEXTCOLOR', (0, 1), (0, 1), colors.black),
+    ('FONTNAME', (0, 2), (-1, 3), 'Helvetica'),
+    ('FONTSIZE', (0, 2), (-1, 3), 10),
+    ('FONTNAME', (0, 2), (0, 5), 'Helvetica-Bold'),
+    ('FONTSIZE', (0, 2), (0, 5), 10),
+    ('FONTNAME', (0, 5), (0, 5), 'Helvetica-Bold'),
+    ('FONTSIZE', (0, 5), (0, 5), 10),
+]))
     elementos.append(tabla_banco)
 
     # --- PDF Build and Rectangle ---
@@ -521,7 +529,7 @@ def generar_pdf():
             io.BytesIO(pdf_data_binary),
             mimetype='application/pdf',
             as_attachment=True,
-            download_name=f'cotizacion_{numero_cotizacion}.pdf'
+            download_name=f'cotizacion_{numero_cotizacion}_{nombre_cliente}.pdf'
         )
 
     except Exception as e:
@@ -592,7 +600,7 @@ def descargar_pdf(cotizacion_id):
             io.BytesIO(pdf_data),
             mimetype='application/pdf',
             as_attachment=True,
-            download_name=f'cotizacion_{cotizacion.numero_cotizacion}.pdf'
+            download_name=f'cotizacion_{cotizacion.numero_cotizacion}_{cotizacion.nombre_cliente}.pdf'
         )
     except NotFound:
         app.logger.warning(f"Intento de descarga de PDF para cotización {cotizacion_id} no encontrada.")
@@ -678,10 +686,6 @@ if __name__ == '__main__':
 
     with app.app_context():
         try:
-            # Si estás usando migraciones (Flask-Migrate), NO llames db.create_all() aquí.
-            # Ejecuta 'flask db upgrade' desde tu terminal para crear/actualizar la DB.
-            # Si NO usas migraciones, descomenta la línea de abajo:
-            # db.create_all()
             print("Verificando/inicializando la base de datos...")
         except Exception as e:
             app.logger.error(f"Error al inicializar la base de datos en el startup: {str(e)}")
