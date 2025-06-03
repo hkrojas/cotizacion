@@ -88,6 +88,21 @@
         .dark .modal-contenido::-webkit-scrollbar-thumb:hover {
             background: #777; /* Color del "pulgar" al pasar el ratón en modo oscuro */
         }
+
+        /* Estilos para los iconos de ordenamiento */
+        .sort-icon {
+            width: 1rem;
+            height: 1rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            transition: transform 0.2s ease-in-out;
+        }
+        .sort-icon.asc {
+            transform: rotate(0deg);
+        }
+        .sort-icon.desc {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-dark-bg-body min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ease-in-out">
@@ -112,13 +127,34 @@
         <div id="mensaje-exito" class="text-green-600 dark:text-green-400 text-center my-4 font-semibold hidden"></div>
         <div id="mensaje-error" class="text-red-600 dark:text-red-400 text-center my-4 font-semibold hidden"></div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse mt-8">
+        <div class="mb-6">
+            <label for="searchInput" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Buscar Cotización:</label>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Buscar por N° Cotización, Cliente o Fecha..."
+                   class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+        </div>
+
+        <div class="overflow-x-auto rounded-lg shadow">
+            <table class="w-full border-collapse" id="quotationsTable">
                 <thead>
                     <tr>
-                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out rounded-tl-lg">N° Cotización</th>
-                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out">Cliente</th>
-                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out">Fecha de Creación</th>
+                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out rounded-tl-lg cursor-pointer" onclick="sortTable(0)">
+                            N° Cotización
+                            <svg class="sort-icon inline-block text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" id="sort-0">
+                                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.25 8.5a.75.75 0 011.1 1.02L10 15.148l2.7-2.908a.75.75 0 011.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.55-.24z" clip-rule="evenodd" />
+                            </svg>
+                        </th>
+                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out cursor-pointer" onclick="sortTable(1)">
+                            Cliente
+                            <svg class="sort-icon inline-block text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" id="sort-1">
+                                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.25 8.5a.75.75 0 011.1 1.02L10 15.148l2.7-2.908a.75.75 0 011.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.55-.24z" clip-rule="evenodd" />
+                            </svg>
+                        </th>
+                        <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out cursor-pointer" onclick="sortTable(2)">
+                            Fecha de Creación
+                            <svg class="sort-icon inline-block text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" id="sort-2">
+                                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.25 8.5a.75.75 0 011.1 1.02L10 15.148l2.7-2.908a.75.75 0 011.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.55-.24z" clip-rule="evenodd" />
+                            </svg>
+                        </th>
                         <th class="bg-blue-700 dark:bg-blue-900 text-white font-bold py-3 px-4 text-left sticky top-0 transition-colors duration-300 ease-in-out rounded-tr-lg">Acciones</th>
                     </tr>
                 </thead>
@@ -127,7 +163,7 @@
                     <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors duration-200 ease-in-out" data-id="{{ cotizacion.id }}">
                         <td class="py-3 px-4 text-gray-800 dark:text-gray-200">{{ cotizacion.numero_cotizacion }}</td>
                         <td class="py-3 px-4 text-gray-800 dark:text-gray-200">{{ cotizacion.nombre_cliente }}</td>
-                        <td class="py-3 px-4 text-gray-800 dark:text-gray-200">{{ cotizacion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+                        <td class="py-3 px-4 text-gray-800 dark:text-gray-200" data-sort-value="{{ cotizacion.fecha_creacion.strftime('%Y-%m-%d') }}">{{ cotizacion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
                         <td class="acciones py-3 px-4 flex flex-wrap gap-2 sm:flex-nowrap">
                             <button class="btn bg-blue-700 hover:bg-blue-800 text-white dark:bg-blue-600 dark:hover:bg-blue-700 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-300 ease-in-out" onclick="descargarPDF('{{ cotizacion.id }}')">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -222,6 +258,10 @@
     </div>
 
     <script>
+        // Variable global para mantener el estado de ordenamiento
+        let currentSortColumn = -1; // -1 significa ninguna columna ordenada
+        let sortDirection = 'asc'; // 'asc' para ascendente, 'desc' para descendente
+
         // Funciones del modo oscuro/claro (reutilizadas de las otras páginas)
         function toggleDarkMode() {
             const htmlElement = document.documentElement;
@@ -251,6 +291,11 @@
                     toggleSwitch.classList.remove('dark');
                 }
             }
+        }
+
+        // Función para convertir el texto a mayúsculas mientras se escribe (añadida de index.html)
+        function convertirAMayusculas(event) {
+            event.target.value = event.target.value.toUpperCase();
         }
 
         // Resto del JavaScript existente, adaptado para usar las nuevas clases/IDs de Tailwind
@@ -463,23 +508,23 @@
                 <div class="form-group mb-2">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Descripción:</label>
                     <input type="text" name="edit-descripcion[]" value="${producto ? producto.descripcion : ''}" required oninput="convertirAMayusculas(event)"
-                           class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                            class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="form-group mb-2">
                         <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Unidades:</label>
                         <input type="number" name="edit-unidades[]" min="1" value="${unidadesValue}" required oninput="calcularTotalOUnitarioEdicion(event)"
-                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                                class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                     </div>
                     <div class="form-group mb-2">
                         <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">P. Unitario:</label>
                         <input type="text" name="edit-precio-unitario[]" value="${precioUnitarioValue}" required oninput="calcularTotalOUnitarioEdicion(event)"
-                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                                class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                     </div>
                     <div class="form-group mb-2">
                         <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total:</label>
                         <input type="text" name="edit-total[]" value="${totalValue}" required oninput="calcularTotalOUnitarioEdicion(event)"
-                               class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
+                                class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-gray-50 dark:bg-dark-bg-field text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600">
                     </div>
                 </div>
                 <input type="hidden" name="edit-producto-id[]" value="${productoId}">
@@ -527,87 +572,92 @@
             }
         }
 
-        document.getElementById("formEdicion").addEventListener("submit", async function(e) {
-            e.preventDefault();
+        // Función para filtrar la tabla (buscador)
+        function filterTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('quotationsTable');
+            const tr = table.getElementsByTagName('tr');
 
-            mostrarSpinner(true, "Guardando cambios...");
+            for (let i = 1; i < tr.length; i++) { // Empieza en 1 para saltar el encabezado
+                let rowVisible = false;
+                // Columnas a buscar: N° Cotización (0), Cliente (1), Fecha de Creación (2)
+                const cellsToSearch = [0, 1, 2]; 
 
-            const cotizacionId = document.getElementById("cotizacion-id").value;
-            const formData = {
-                nombre_cliente: document.getElementById("edit-nombre").value.trim(),
-                tipo_documento: document.getElementById("edit-documento").value,
-                nro_documento: document.getElementById("edit-numero").value.trim(),
-                direccion: document.getElementById("edit-direccion").value.trim(),
-                moneda: document.getElementById("edit-moneda").value,
-                productos: []
-            };
+                for (let j = 0; j < cellsToSearch.length; j++) {
+                    const td = tr[i].getElementsByTagName('td')[cellsToSearch[j]];
+                    if (td) {
+                        const textValue = td.textContent || td.innerText;
+                        if (textValue.toUpperCase().indexOf(filter) > -1) {
+                            rowVisible = true;
+                            break;
+                        }
+                    }
+                }
+                tr[i].style.display = rowVisible ? '' : 'none';
+            }
+        }
 
-            const productosDivs = document.querySelectorAll('.producto-edicion');
-            if (productosDivs.length === 0) {
-                mostrarMensaje('error', 'Debe agregar al menos un producto.');
-                mostrarSpinner(false);
-                return;
+        // Función para ordenar la tabla
+        function sortTable(columnIndex) {
+            const table = document.getElementById('quotationsTable');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.rows);
+
+            // Determinar la dirección de ordenamiento
+            if (currentSortColumn === columnIndex) {
+                sortDirection = (sortDirection === 'asc') ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = columnIndex;
+                sortDirection = 'asc'; // Por defecto, ordenar ascendente al cambiar de columna
             }
 
-            let allProductsValid = true;
-            productosDivs.forEach(div => {
-                const descripcionInput = div.querySelector('input[name="edit-descripcion[]"]');
-                const unidadesInput = div.querySelector('input[name="edit-unidades[]"]');
-                const precioUnitarioInput = div.querySelector('input[name="edit-precio-unitario[]"]'); // Get new input
-                const totalInput = div.querySelector('input[name="edit-total[]"]');
-                const productoIdInput = div.querySelector('input[name="edit-producto-id[]"]');
+            // Actualizar iconos de ordenamiento
+            updateSortIcons(columnIndex, sortDirection);
 
-                const descripcion = descripcionInput.value.trim();
-                const unidades = parseAndCleanNumber(unidadesInput.value);
-                const precioUnitario = parseAndCleanNumber(precioUnitarioInput.value); // Parse new input
-                const total = parseAndCleanNumber(totalInput.value);
-                const productoId = productoIdInput.value;
+            rows.sort((a, b) => {
+                let cellA, cellB;
 
-                if (!descripcion || isNaN(unidades) || unidades <= 0 || isNaN(precioUnitario) || precioUnitario < 0 || isNaN(total) || total < 0) {
-                    allProductsValid = false;
+                if (columnIndex === 2) { // Columna de Fecha de Creación
+                    // Usar el atributo data-sort-value para fechas ISO (YYYY-MM-DD)
+                    cellA = a.cells[columnIndex].getAttribute('data-sort-value');
+                    cellB = b.cells[columnIndex].getAttribute('data-sort-value');
+                } else if (columnIndex === 0) { // Columna de N° Cotización (número)
+                    cellA = parseInt(a.cells[columnIndex].textContent.trim(), 10);
+                    cellB = parseInt(b.cells[columnIndex].textContent.trim(), 10);
+                } else { // Otras columnas (Cliente)
+                    cellA = a.cells[columnIndex].textContent.trim().toLowerCase();
+                    cellB = b.cells[columnIndex].textContent.trim().toLowerCase();
                 }
+
+                let comparison = 0;
+                if (cellA > cellB) {
+                    comparison = 1;
+                } else if (cellA < cellB) {
+                    comparison = -1;
+                }
+
+                return (sortDirection === 'asc') ? comparison : -comparison;
             });
 
-            if (!allProductsValid) {
-                mostrarMensaje('error', 'Por favor, complete todos los campos de los productos correctamente (descripción, unidades > 0, precio unitario >= 0, total >= 0).');
-                mostrarSpinner(false);
-                return;
-            }
+            // Reinsertar las filas ordenadas
+            rows.forEach(row => tbody.appendChild(row));
+        }
 
-            try {
-                const response = await fetch(`/actualizar_cotizacion/${cotizacionId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                const data = await response.json();
-                mostrarSpinner(false);
-
-                if (!response.ok) {
-                    const errorMsg = data.error || 'Error desconocido al actualizar';
-                    throw new Error(`Error ${response.status}: ${errorMsg}`);
+        // Función para actualizar los iconos de ordenamiento en los encabezados
+        function updateSortIcons(columnIndex, direction) {
+            const headers = document.querySelectorAll('#quotationsTable th .sort-icon');
+            headers.forEach((icon, index) => {
+                icon.classList.remove('asc', 'desc'); // Quita todas las clases de dirección
+                if (index === columnIndex) {
+                    icon.classList.add(direction); // Añade la clase de dirección actual
                 }
+            });
+        }
 
-                if (data.success) {
-                    mostrarMensaje('exito', data.message);
-                    cerrarModal();
-                    // Recargar la página o actualizar la fila en la tabla principal si es necesario
-                    location.reload(); // Simple reload for now to reflect changes
-                } else {
-                    throw new Error(data.error || 'Error al procesar la solicitud en el servidor');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarMensaje('error', error.message);
-                mostrarSpinner(false);
-            }
-        });
-
+        // Aplica el modo oscuro/claro al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
-            applyDarkMode(); // Aplica el modo oscuro/claro guardado al cargar la página
+            applyDarkMode();
         });
     </script>
 </body>
